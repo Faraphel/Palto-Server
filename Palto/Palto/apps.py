@@ -1,6 +1,7 @@
 from django.apps import AppConfig
 
 
-class UserConfig(AppConfig):
+class PaltoConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = "User"
+    name = "Palto.Palto"
+    label = "Palto"

@@ -51,7 +51,7 @@ INSTALLED_APPS = [
     "debug_toolbar",
     'django_extensions',
 
-    "Palto.apps.User.apps",
+    "Palto.Palto",
 ]
 
 MIDDLEWARE = [
@@ -147,3 +147,6 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
     ]
 }
+
+# User
+AUTH_USER_MODEL = "Palto.models.User"
