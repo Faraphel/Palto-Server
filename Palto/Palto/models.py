@@ -2,10 +2,21 @@ import uuid
 from datetime import datetime, timedelta
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
 # Create your models here.
+class User(AbstractUser):
+    """
+    A user.
+
+    Same as the base Django user, but the id is now an uuid instead of an int.
+    """
+
+    id: uuid.UUID = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False, max_length=36)
+
+
 class Department(models.Model):
     """
     A scholar department.
@@ -17,9 +28,9 @@ class Department(models.Model):
     id: uuid.UUID = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False, max_length=36)
     name: str = models.CharField(max_length=32)
 
-    managers = models.ManyToManyField(to=get_user_model(), related_name="managed_departments")
-    teachers = models.ManyToManyField(to=get_user_model(), related_name="taught_departments")
-    students = models.ManyToManyField(to=get_user_model(), related_name="study_departments")
+    managers = models.ManyToManyField(to=get_user_model(), blank=True, related_name="managing_departments")
+    teachers = models.ManyToManyField(to=get_user_model(), blank=True, related_name="teaching_departments")
+    students = models.ManyToManyField(to=get_user_model(), blank=True, related_name="studying_departments")
 
 
 class StudentGroup(models.Model):
@@ -35,7 +46,7 @@ class StudentGroup(models.Model):
     id: uuid.UUID = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False, max_length=36)
     name: str = models.CharField(max_length=32)
 
-    students = models.ManyToManyField(to=get_user_model(), related_name="student_groups")
+    students = models.ManyToManyField(to=get_user_model(), blank=True, related_name="student_groups")
 
 
 class TeachingUnit(models.Model):
@@ -51,7 +62,9 @@ class TeachingUnit(models.Model):
     id: uuid.UUID = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False, max_length=36)
     name: str = models.CharField(max_length=32)
 
-    student_groups = models.ManyToManyField(to=StudentGroup, related_name="taught_units")
+    managers = models.ManyToManyField(to=get_user_model(), blank=True, related_name="managing_units")
+    teachers = models.ManyToManyField(to=get_user_model(), blank=True, related_name="teaching_units")
+    student_groups = models.ManyToManyField(to=StudentGroup, blank=True, related_name="studying_units")
 
 
 class StudentCard(models.Model):
@@ -64,7 +77,7 @@ class StudentCard(models.Model):
     id: uuid.UUID = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False, max_length=36)
     uid: bytes = models.BinaryField(max_length=7)
 
-    owner = models.ManyToManyField(to=get_user_model(), related_name="student_cards")
+    owner = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, related_name="student_cards")
 
 
 class TeachingSession(models.Model):
@@ -80,7 +93,7 @@ class TeachingSession(models.Model):
     start: datetime = models.DateTimeField()
     duration: timedelta = models.DurationField()
 
-    teacher = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, related_name="taught_sessions")
+    teacher = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, related_name="teaching_sessions")
 
     @property
     def end(self) -> datetime:
@@ -97,7 +110,7 @@ class Attendance(models.Model):
     id: uuid.UUID = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False, max_length=36)
     date: datetime = models.DateTimeField()
 
-    student = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, related_name="attended_sessions")
+    student = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, related_name="attending_sessions")
 
 
 class Absence(models.Model):

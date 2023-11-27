@@ -148,5 +148,5 @@ REST_FRAMEWORK = {
     ]
 }
 
-# User
-AUTH_USER_MODEL = "Palto.models.User"
+# User model
+AUTH_USER_MODEL = "Palto.User"
