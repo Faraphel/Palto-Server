@@ -22,7 +22,7 @@ urlpatterns = [
     # ...
 
     # API
-    path('rest/', include('rest_framework.urls')),  # API REST
+    path('api/', include('rest_framework.urls')),  # API REST
 
     # Debug
     path('admin/', admin.site.urls),  # Admin page
