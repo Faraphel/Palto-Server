@@ -26,7 +26,7 @@ class Department(models.Model):
     """
 
     id: uuid.UUID = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False, max_length=36)
-    name: str = models.CharField(max_length=32)
+    name: str = models.CharField(max_length=64)
     mail: str = models.EmailField()
 
     managers = models.ManyToManyField(to=get_user_model(), blank=True, related_name="managing_departments")
@@ -45,7 +45,7 @@ class StudentGroup(models.Model):
     """
 
     id: uuid.UUID = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False, max_length=36)
-    name: str = models.CharField(max_length=32)
+    name: str = models.CharField(max_length=128)
 
     students = models.ManyToManyField(to=get_user_model(), blank=True, related_name="student_groups")
 
@@ -61,7 +61,7 @@ class TeachingUnit(models.Model):
     """
 
     id: uuid.UUID = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False, max_length=36)
-    name: str = models.CharField(max_length=32)
+    name: str = models.CharField(max_length=64)
 
     department = models.ForeignKey(to=Department, on_delete=models.CASCADE, related_name="teaching_units")
 
