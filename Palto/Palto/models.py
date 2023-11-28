@@ -1,4 +1,3 @@
-import os
 import uuid
 from datetime import datetime, timedelta
 
@@ -96,6 +95,7 @@ class TeachingSession(models.Model):
     duration: timedelta = models.DurationField()
     note: str = models.TextField(blank=True)
 
+    group = models.ForeignKey(to=StudentGroup, on_delete=models.CASCADE, related_name="teaching_sessions")
     teacher = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, related_name="teaching_sessions")
 
     @property
@@ -128,7 +128,7 @@ class Absence(models.Model):
     message: str = models.TextField()
 
     student = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, related_name="absented_sessions")
-    session = models.ManyToManyField(to=TeachingSession, on_delete=models.CASCADE, related_name="absences")
+    session = models.ManyToManyField(to=TeachingSession, blank=True, related_name="absences")
 
 
 class AbsenceAttachment(models.Model):
