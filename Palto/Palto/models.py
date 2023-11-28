@@ -1,3 +1,4 @@
+import os
 import uuid
 from datetime import datetime, timedelta
 
@@ -136,6 +137,6 @@ class AbsenceAttachment(models.Model):
     """
 
     id: uuid.UUID = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False, max_length=36)
-    content = models.FileField()
+    content = models.FileField(upload_to="absence/attachment/")
 
     absence = models.ForeignKey(to=Absence, on_delete=models.CASCADE, related_name="attachments")
