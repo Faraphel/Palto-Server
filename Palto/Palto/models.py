@@ -113,7 +113,8 @@ class Attendance(models.Model):
     id: uuid.UUID = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False, max_length=36)
     date: datetime = models.DateTimeField()
 
-    student = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, related_name="attending_sessions")
+    student = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, related_name="attended_sessions")
+    session = models.ForeignKey(to=TeachingSession, on_delete=models.CASCADE, related_name="attendances")
 
 
 class Absence(models.Model):
@@ -126,7 +127,8 @@ class Absence(models.Model):
     id: uuid.UUID = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False, max_length=36)
     message: str = models.TextField()
 
-    student = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, related_name="absent_sessions")
+    student = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, related_name="absented_sessions")
+    session = models.ManyToManyField(to=TeachingSession, on_delete=models.CASCADE, related_name="absences")
 
 
 class AbsenceAttachment(models.Model):
