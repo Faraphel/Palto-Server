@@ -27,6 +27,7 @@ class Department(models.Model):
 
     id: uuid.UUID = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False, max_length=36)
     name: str = models.CharField(max_length=32)
+    mail: str = models.EmailField()
 
     managers = models.ManyToManyField(to=get_user_model(), blank=True, related_name="managing_departments")
     teachers = models.ManyToManyField(to=get_user_model(), blank=True, related_name="teaching_departments")

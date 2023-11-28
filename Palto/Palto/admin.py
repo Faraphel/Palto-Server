@@ -1,7 +1,7 @@
 from django.contrib import admin
 
-from .models import Department, StudentGroup, TeachingUnit, StudentCard, TeachingSession, Attendance, Absence, \
-    AbsenceAttachment
+from .models import (Department, StudentGroup, TeachingUnit, StudentCard, TeachingSession, Attendance, Absence,
+                     AbsenceAttachment, User)
 
 
 # Register your models here.
