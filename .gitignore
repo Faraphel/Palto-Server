@@ -1,2 +1,5 @@
-.idea/
-Palto/db.sqlite3
+.idea
+venv
+media
+static-collected
+db.sqlite3
