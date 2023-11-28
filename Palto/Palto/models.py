@@ -63,7 +63,7 @@ class TeachingUnit(models.Model):
     id: uuid.UUID = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False, max_length=36)
     name: str = models.CharField(max_length=32)
 
-    department = models.ForeignKey(to=Department, on_delete=models.CASCADE, related="teaching_units")
+    department = models.ForeignKey(to=Department, on_delete=models.CASCADE, related_name="teaching_units")
 
     managers = models.ManyToManyField(to=get_user_model(), blank=True, related_name="managing_units")
     teachers = models.ManyToManyField(to=get_user_model(), blank=True, related_name="teaching_units")
