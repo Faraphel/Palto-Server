@@ -93,6 +93,7 @@ class TeachingSession(models.Model):
     id: uuid.UUID = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False, max_length=36)
     start: datetime = models.DateTimeField()
     duration: timedelta = models.DurationField()
+    note: str = models.TextField(blank=True)
 
     teacher = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, related_name="teaching_sessions")
 
