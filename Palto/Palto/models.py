@@ -63,6 +63,8 @@ class TeachingUnit(models.Model):
     id: uuid.UUID = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False, max_length=36)
     name: str = models.CharField(max_length=32)
 
+    department = models.ForeignKey(to=Department, on_delete=models.CASCADE, related="teaching_units")
+
     managers = models.ManyToManyField(to=get_user_model(), blank=True, related_name="managing_units")
     teachers = models.ManyToManyField(to=get_user_model(), blank=True, related_name="teaching_units")
     student_groups = models.ManyToManyField(to=StudentGroup, blank=True, related_name="studying_units")
@@ -94,6 +96,8 @@ class TeachingSession(models.Model):
     start: datetime = models.DateTimeField()
     duration: timedelta = models.DurationField()
     note: str = models.TextField(blank=True)
+
+    unit = models.ForeignKey(to=TeachingUnit, on_delete=models.CASCADE, related_name="sessions")
 
     group = models.ForeignKey(to=StudentGroup, on_delete=models.CASCADE, related_name="teaching_sessions")
     teacher = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, related_name="teaching_sessions")
