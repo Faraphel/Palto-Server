@@ -16,6 +16,9 @@ class User(AbstractUser):
 
     id: uuid.UUID = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False, max_length=36)
 
+    def __repr__(self):
+        return f"<{self.__class__.__name__} id={str(self.id)[:8]} username={self.username!r}>"
+
 
 class Department(models.Model):
     """
@@ -33,6 +36,12 @@ class Department(models.Model):
     teachers = models.ManyToManyField(to=get_user_model(), blank=True, related_name="teaching_departments")
     students = models.ManyToManyField(to=get_user_model(), blank=True, related_name="studying_departments")
 
+    def __repr__(self):
+        return f"<{self.__class__.__name__} id={str(self.id)[:8]} name={self.name!r}>"
+
+    def __str__(self):
+        return self.name
+
 
 class StudentGroup(models.Model):
     """
@@ -48,6 +57,12 @@ class StudentGroup(models.Model):
     name: str = models.CharField(max_length=128)
 
     students = models.ManyToManyField(to=get_user_model(), blank=True, related_name="student_groups")
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__} id={str(self.id)[:8]} name={self.name!r}>"
+
+    def __str__(self):
+        return self.name
 
 
 class TeachingUnit(models.Model):
@@ -69,6 +84,12 @@ class TeachingUnit(models.Model):
     teachers = models.ManyToManyField(to=get_user_model(), blank=True, related_name="teaching_units")
     student_groups = models.ManyToManyField(to=StudentGroup, blank=True, related_name="studying_units")
 
+    def __repr__(self):
+        return f"<{self.__class__.__name__} id={str(self.id)[:8]} name={self.name!r}>"
+
+    def __str__(self):
+        return self.name
+
 
 class StudentCard(models.Model):
     """
@@ -80,7 +101,10 @@ class StudentCard(models.Model):
     id: uuid.UUID = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False, max_length=36)
     uid: bytes = models.BinaryField(max_length=7)
 
-    owner = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, related_name="student_cards")
+    owner: User = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, related_name="student_cards")
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__} id={str(self.id)[:8]} owner={self.owner.username!r}>"
 
 
 class TeachingSession(models.Model):
@@ -102,6 +126,12 @@ class TeachingSession(models.Model):
     group = models.ForeignKey(to=StudentGroup, on_delete=models.CASCADE, related_name="teaching_sessions")
     teacher = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, related_name="teaching_sessions")
 
+    def __repr__(self):
+        return f"<{self.__class__.__name__} id={str(self.id)[:8]} unit={self.unit.name!r} start={self.start}>"
+
+    def __str__(self):
+        return f"{self.unit.name} ({self.start})"
+
     @property
     def end(self) -> datetime:
         return self.start + self.duration
@@ -117,8 +147,25 @@ class Attendance(models.Model):
     id: uuid.UUID = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False, max_length=36)
     date: datetime = models.DateTimeField()
 
-    student = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, related_name="attended_sessions")
-    session = models.ForeignKey(to=TeachingSession, on_delete=models.CASCADE, related_name="attendances")
+    student: User = models.ForeignKey(
+        to=get_user_model(),
+        on_delete=models.CASCADE,
+        related_name="attended_sessions"
+    )
+    session: TeachingSession = models.ForeignKey(
+        to=TeachingSession,
+        on_delete=models.CASCADE,
+        related_name="attendances"
+    )
+
+    def __repr__(self):
+        return (
+            f"<{self.__class__.__name__} "
+            f"id={str(self.id)[:8]} "
+            f"student={self.student.username} "
+            f"session={str(self.session.id)[:8]}"
+            f">"
+        )
 
 
 class Absence(models.Model):
@@ -131,8 +178,20 @@ class Absence(models.Model):
     id: uuid.UUID = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False, max_length=36)
     message: str = models.TextField()
 
-    student = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, related_name="absented_sessions")
-    session = models.ManyToManyField(to=TeachingSession, blank=True, related_name="absences")
+    student: User = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, related_name="absented_sessions")
+    session: TeachingSession = models.ManyToManyField(to=TeachingSession, blank=True, related_name="absences")
+
+    def __repr__(self):
+        return (
+            f"<{self.__class__.__name__} "
+            f"id={str(self.id)[:8]} "
+            f"student={self.student.username} "
+            f"session={str(self.session.id)[:8]}"
+            f">"
+        )
+
+    def __str__(self):
+        return f"[{str(self.id)[:8]}] {self.student}"
 
 
 class AbsenceAttachment(models.Model):
@@ -146,3 +205,6 @@ class AbsenceAttachment(models.Model):
     content = models.FileField(upload_to="absence/attachment/")
 
     absence = models.ForeignKey(to=Absence, on_delete=models.CASCADE, related_name="attachments")
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__} id={str(self.id)[:8]} content={self.content!r}>"
