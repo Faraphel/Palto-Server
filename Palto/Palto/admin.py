@@ -5,6 +5,13 @@ from .models import (Department, StudentGroup, TeachingUnit, StudentCard, Teachi
 
 
 # Register your models here.
+@admin.register(User)
+class AdminUser(admin.ModelAdmin):
+    list_display = ("id", "username", "email", "first_name", "last_name", "is_staff")
+    search_fields = ("id", "username", "email", "first_name", "last_name", "is_staff")
+    list_filter = ("is_staff",)
+
+
 @admin.register(Department)
 class AdminDepartment(admin.ModelAdmin):
     list_display = ("id", "name")
