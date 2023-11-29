@@ -1,13 +1,33 @@
 import uuid
+from abc import abstractmethod, ABC
 from datetime import datetime, timedelta
+from typing import Iterable
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models import QuerySet, Q
+from rest_framework import permissions
 
 
 # Create your models here.
-class User(AbstractUser):
+class ModelApiMixin(ABC):
+    @classmethod
+    @abstractmethod
+    def all_visible_to(cls, user: "User") -> QuerySet:
+        """
+        Return all the objects visible to a user.
+        """
+
+    @classmethod
+    @abstractmethod
+    def permissions_for(cls, user: "User", method: str) -> permissions.BasePermission:
+        """
+        Return the permissions for a user and the method used to access the object.
+        """
+
+
+class User(AbstractUser, ModelApiMixin):
     """
     A user.
 
@@ -19,8 +39,45 @@ class User(AbstractUser):
     def __repr__(self):
         return f"<{self.__class__.__name__} id={str(self.id)[:8]} username={self.username!r}>"
 
+    @staticmethod
+    def multiple_related_departments(users: Iterable["User"]) -> QuerySet["Department"]:
+        """
+        Return all the related departments from multiple users.
+        """
 
-class Department(models.Model):
+        return Department.objects.filter(
+            Q(managers__in=users) |
+            Q(teachers__in=users) |
+            Q(students__in=users)
+        ).distinct()
+
+    @property
+    def related_departments(self) -> QuerySet["Department"]:
+        """
+        The list of departments related with the user.
+        """
+
+        return self.multiple_related_departments([self])
+
+    @classmethod
+    def all_visible_to(cls, user: "User") -> QuerySet["User"]:
+        if user.is_superuser:
+            queryset = User.objects.all()
+        else:
+            queryset = Department.multiple_related_users(user.related_departments)
+
+        return queryset.order_by("pk")
+
+    @classmethod
+    def permissions_for(cls, user: "User", method: str) -> permissions.BasePermission:
+        # TODO: ???
+        if method in permissions.SAFE_METHODS:
+            return permissions.AllowAny()
+
+        return permissions.IsAdminUser()
+
+
+class Department(models.Model, ModelApiMixin):
     """
     A scholar department.
 
@@ -42,8 +99,32 @@ class Department(models.Model):
     def __str__(self):
         return self.name
 
+    @staticmethod
+    def multiple_related_users(departments: Iterable["Department"]) -> QuerySet["User"]:
+        """
+        Return all the related users from multiple departments.
+        """
 
-class StudentGroup(models.Model):
+        return User.objects.filter(
+            Q(managing_departments__in=departments) |
+            Q(teaching_departments__in=departments) |
+            Q(studying_departments__in=departments)
+        ).distinct()
+
+    @property
+    def related_users(self) -> QuerySet["User"]:
+        """
+        The list of users related with the department.
+        """
+
+        return self.multiple_related_users([self])
+
+    @classmethod
+    def all_visible_to(cls, user: "User") -> QuerySet["User"]:
+        return cls.objects.all().order_by("pk")
+
+
+class StudentGroup(models.Model, ModelApiMixin):
     """
     A student group.
 
@@ -56,6 +137,7 @@ class StudentGroup(models.Model):
     id: uuid.UUID = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False, max_length=36)
     name: str = models.CharField(max_length=128)
 
+    department = models.ForeignKey(to=Department, on_delete=models.CASCADE, related_name="student_groups")
     students = models.ManyToManyField(to=get_user_model(), blank=True, related_name="student_groups")
 
     def __repr__(self):
@@ -64,8 +146,24 @@ class StudentGroup(models.Model):
     def __str__(self):
         return self.name
 
+    @classmethod
+    def all_visible_to(cls, user: "User") -> QuerySet["User"]:
+        if user.is_superuser:
+            queryset = cls.objects.all()
 
-class TeachingUnit(models.Model):
+        else:
+            queryset = cls.objects.filter(
+                # get all the groups where the user is
+                Q(students=user) |
+                # get all the groups where the department is managed by the user
+                Q(department=user.managing_departments)
+                # TODO: prof ? rôle créateur du groupe ?
+            ).distinct()
+
+        return queryset.order_by("pk")
+
+
+class TeachingUnit(models.Model, ModelApiMixin):
     """
     A teaching unit.
 
@@ -90,8 +188,21 @@ class TeachingUnit(models.Model):
     def __str__(self):
         return self.name
 
+    @classmethod
+    def all_visible_to(cls, user: "User") -> QuerySet["User"]:
+        if user.is_superuser:
+            queryset = cls.objects.all()
 
-class StudentCard(models.Model):
+        else:
+            queryset = cls.objects.filter(
+                # get all the units with a common department with the user
+                Q(department__in=user.related_departments)
+            )
+
+        return queryset.order_by("pk")
+
+
+class StudentCard(models.Model, ModelApiMixin):
     """
     A student card.
 
@@ -106,8 +217,23 @@ class StudentCard(models.Model):
     def __repr__(self):
         return f"<{self.__class__.__name__} id={str(self.id)[:8]} owner={self.owner.username!r}>"
 
+    @classmethod
+    def all_visible_to(cls, user: "User") -> QuerySet["User"]:
+        if user.is_superuser:
+            queryset = cls.objects.all()
 
-class TeachingSession(models.Model):
+        else:
+            queryset = cls.objects.filter(
+                # get all the cards that are owned by the user
+                Q(owner=user) |
+                # get all the cards where the owner is studying in a department where the user is a manager
+                Q(owner__studying_departments__managers=user)
+            ).distinct()
+
+        return queryset.order_by("pk")
+
+
+class TeachingSession(models.Model, ModelApiMixin):
     """
     A session of a teaching unit.
 
@@ -136,8 +262,27 @@ class TeachingSession(models.Model):
     def end(self) -> datetime:
         return self.start + self.duration
 
+    @classmethod
+    def all_visible_to(cls, user: "User") -> QuerySet["User"]:
+        if user.is_superuser:
+            queryset = cls.objects.all()
 
-class Attendance(models.Model):
+        else:
+            queryset = cls.objects.filter(
+                # get all the sessions where the user is a teacher
+                Q(teacher=user) |
+                # get all the sessions where the user is in the group
+                Q(group__students=user) |
+                # get all the sessions where the user is managing the unit
+                Q(unit__managers=user) |
+                # get all the sessions where the user is managing the department
+                Q(unit__department__managers=user)
+            ).distinct()
+
+        return queryset.order_by("pk")
+
+
+class Attendance(models.Model, ModelApiMixin):
     """
     A student attendance to a session.
 
@@ -167,8 +312,27 @@ class Attendance(models.Model):
             f">"
         )
 
+    @classmethod
+    def all_visible_to(cls, user: "User") -> QuerySet["User"]:
+        if user.is_superuser:
+            queryset = cls.objects.all()
 
-class Absence(models.Model):
+        else:
+            queryset = cls.objects.filter(
+                # get all the session where the user was the teacher
+                Q(session__teacher=user) |
+                # get all the session where the user was the student
+                Q(student=user) |
+                # get all the sessions where the user is managing the unit
+                Q(session__unit__managers=user) |
+                # get all the sessions where the user is managing the department
+                Q(session__unit__department__managers=user)
+            ).distinct()
+
+        return queryset.order_by("pk")
+
+
+class Absence(models.Model, ModelApiMixin):
     """
     A student justified absence to a session.
 
@@ -193,8 +357,27 @@ class Absence(models.Model):
     def __str__(self):
         return f"[{str(self.id)[:8]}] {self.student}"
 
+    @classmethod
+    def all_visible_to(cls, user: "User") -> QuerySet["User"]:
+        if user.is_superuser:
+            queryset = cls.objects.all()
 
-class AbsenceAttachment(models.Model):
+        else:
+            queryset = cls.objects.filter(
+                # get all the absence where the user was the teacher
+                Q(session__teacher=user) |
+                # get all the absence where the user was the student
+                Q(student=user) |
+                # get all the absences where the user is managing the unit
+                Q(session__unit__managers=user) |
+                # get all the absences where the user is managing the department
+                Q(session__unit__department__managers=user)
+            ).distinct()
+
+        return queryset.order_by("pk")
+
+
+class AbsenceAttachment(models.Model, ModelApiMixin):
     """
     An attachment to a student justified absence.
 
@@ -208,3 +391,22 @@ class AbsenceAttachment(models.Model):
 
     def __repr__(self):
         return f"<{self.__class__.__name__} id={str(self.id)[:8]} content={self.content!r}>"
+
+    @classmethod
+    def all_visible_to(cls, user: "User") -> QuerySet["User"]:
+        if user.is_superuser:
+            queryset = cls.objects.all()
+
+        else:
+            queryset = cls.objects.filter(
+                # get all the absence attachments where the user was the teacher
+                Q(absence__session__teacher=user) |
+                # get all the absence attachments where the user was the student
+                Q(absence__student=user) |
+                # get all the absence attachments where the user is managing the unit
+                Q(absence__session__unit__managers=user) |
+                # get all the absence attachments where the user is managing the department
+                Q(absence__session__unit__department__managers=user)
+            ).distinct()
+
+        return queryset.order_by("pk")
