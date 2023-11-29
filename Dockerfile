@@ -16,8 +16,5 @@ RUN pip install -r requirements.txt
 # Expose the port on which your Django application will run
 EXPOSE 80
 
-# Set the working directory in the Django application
-WORKDIR ./Palto
-
 # Start the Django application
 ENTRYPOINT ["python", "manage.py", "runserver_plus", "0.0.0.0:80"]
