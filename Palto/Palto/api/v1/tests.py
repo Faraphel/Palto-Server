@@ -6,7 +6,7 @@ Everything to test the API v1 is described here.
 
 from django import test
 
-from Palto.Palto.models import User
+from Palto.Palto import models
 
 
 class UserTestCase(test.TestCase):

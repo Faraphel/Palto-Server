@@ -7,65 +7,60 @@ An API view describe which models should display which files to user with which 
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
-from .permissions import (UserPermission, DepartmentPermission, StudentGroupPermission, TeachingUnitPermission,
-                          StudentCardPermission, TeachingSessionPermission, AttendancePermission, AbsencePermission,
-                          AbsenceAttachmentPermission)
-from .serializers import (UserSerializer, AbsenceAttachmentSerializer, AbsenceSerializer, AttendanceSerializer,
-                          TeachingSessionSerializer, StudentCardSerializer, StudentGroupSerializer,
-                          DepartmentSerializer, TeachingUnitSerializer)
-from ...models import (User, AbsenceAttachment, Absence, Attendance, TeachingSession, StudentCard, TeachingUnit,
-                       StudentGroup, Department)
+from . import permissions
+from . import serializers
+from ... import models
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    serializer_class = UserSerializer
-    queryset = User.objects.all()
-    permission_classes = [IsAuthenticated, UserPermission]
+    serializer_class = serializers.UserSerializer
+    queryset = models.User.objects.all()
+    permission_classes = [IsAuthenticated, permissions.UserPermission]
 
 
 class DepartmentViewSet(UserViewSet):
-    serializer_class = DepartmentSerializer
-    queryset = Department.objects.all()
-    permission_classes = [DepartmentPermission]
+    serializer_class = serializers.DepartmentSerializer
+    queryset = models.Department.objects.all()
+    permission_classes = [permissions.DepartmentPermission]
 
 
 class StudentGroupViewSet(UserViewSet):
-    serializer_class = StudentGroupSerializer
-    queryset = StudentGroup.objects.all()
-    permission_classes = [IsAuthenticated, StudentGroupPermission]
+    serializer_class = serializers.StudentGroupSerializer
+    queryset = models.StudentGroup.objects.all()
+    permission_classes = [IsAuthenticated, permissions.StudentGroupPermission]
 
 
 class TeachingUnitViewSet(UserViewSet):
-    serializer_class = TeachingUnitSerializer
-    queryset = TeachingUnit.objects.all()
-    permission_classes = [IsAuthenticated, TeachingUnitPermission]
+    serializer_class = serializers.TeachingUnitSerializer
+    queryset = models.TeachingUnit.objects.all()
+    permission_classes = [IsAuthenticated, permissions.TeachingUnitPermission]
 
 
 class StudentCardViewSet(UserViewSet):
-    serializer_class = StudentCardSerializer
-    queryset = StudentCard.objects.all()
-    permission_classes = [IsAuthenticated, StudentCardPermission]
+    serializer_class = serializers.StudentCardSerializer
+    queryset = models.StudentCard.objects.all()
+    permission_classes = [IsAuthenticated, permissions.StudentCardPermission]
 
 
 class TeachingSessionViewSet(UserViewSet):
-    serializer_class = TeachingSessionSerializer
-    queryset = TeachingSession.objects.all()
-    permission_classes = [IsAuthenticated, TeachingSessionPermission]
+    serializer_class = serializers.TeachingSessionSerializer
+    queryset = models.TeachingSession.objects.all()
+    permission_classes = [IsAuthenticated, permissions.TeachingSessionPermission]
 
 
 class AttendanceViewSet(UserViewSet):
-    serializer_class = AttendanceSerializer
-    queryset = Attendance.objects.all()
-    permission_classes = [IsAuthenticated, AttendancePermission]
+    serializer_class = serializers.AttendanceSerializer
+    queryset = models.Attendance.objects.all()
+    permission_classes = [IsAuthenticated, permissions.AttendancePermission]
 
 
 class AbsenceViewSet(UserViewSet):
-    serializer_class = AbsenceSerializer
-    queryset = Absence.objects.all()
-    permission_classes = [IsAuthenticated, AbsencePermission]
+    serializer_class = serializers.AbsenceSerializer
+    queryset = models.Absence.objects.all()
+    permission_classes = [IsAuthenticated, permissions.AbsencePermission]
 
 
 class AbsenceAttachmentViewSet(UserViewSet):
-    serializer_class = AbsenceAttachmentSerializer
-    queryset = AbsenceAttachment.objects.all()
-    permission_classes = [IsAuthenticated, AbsenceAttachmentPermission]
+    serializer_class = serializers.AbsenceAttachmentSerializer
+    queryset = models.AbsenceAttachment.objects.all()
+    permission_classes = [IsAuthenticated, permissions.AbsenceAttachmentPermission]

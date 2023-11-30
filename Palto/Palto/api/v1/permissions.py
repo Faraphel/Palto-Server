@@ -6,26 +6,25 @@ A permission describe which user is allowed to see and modify which objet with t
 
 from rest_framework import permissions
 
-from Palto.Palto.models import (Department, TeachingUnit, StudentCard, StudentGroup, User, TeachingSession, Attendance,
-                                Absence, AbsenceAttachment)
+from Palto.Palto import models
 
 
 class UserPermission(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj: User) -> bool:
+    def has_object_permission(self, request, view, obj: models.User) -> bool:
         # if the requesting user is admin, allow all
         if request.user.is_superuser:
             return True
 
         if request.method in permissions.SAFE_METHODS:
             # if the user is in one of the same department as the requesting user, allow read
-            if obj in Department.multiple_related_users(request.user.related_departments):
+            if obj in models.Department.multiple_related_users(request.user.related_departments):
                 return True
 
         return False
 
 
 class DepartmentPermission(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj: Department) -> bool:
+    def has_object_permission(self, request, view, obj: models.Department) -> bool:
         # if the requesting user is admin, allow all
         if request.user.is_superuser:
             return True
@@ -42,7 +41,7 @@ class DepartmentPermission(permissions.BasePermission):
 
 
 class StudentGroupPermission(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj: StudentGroup) -> bool:
+    def has_object_permission(self, request, view, obj: models.StudentGroup) -> bool:
         # if the requesting user is admin, allow all
         if request.user.is_superuser:
             return True
@@ -68,7 +67,7 @@ class StudentGroupPermission(permissions.BasePermission):
 
 
 class TeachingUnitPermission(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj: TeachingUnit) -> bool:
+    def has_object_permission(self, request, view, obj: models.TeachingUnit) -> bool:
         # if the requesting user is admin, allow all
         if request.user.is_superuser:
             return True
@@ -90,7 +89,7 @@ class TeachingUnitPermission(permissions.BasePermission):
 
 
 class StudentCardPermission(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj: StudentCard) -> bool:
+    def has_object_permission(self, request, view, obj: models.StudentCard) -> bool:
         # if the requesting user is admin, allow all
         if request.user.is_superuser:
             return True
@@ -108,7 +107,7 @@ class StudentCardPermission(permissions.BasePermission):
 
 
 class TeachingSessionPermission(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj: TeachingSession) -> bool:
+    def has_object_permission(self, request, view, obj: models.TeachingSession) -> bool:
         # if the requesting user is admin, allow all
         if request.user.is_superuser:
             return True
@@ -134,7 +133,7 @@ class TeachingSessionPermission(permissions.BasePermission):
 
 
 class AttendancePermission(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj: Attendance) -> bool:
+    def has_object_permission(self, request, view, obj: models.Attendance) -> bool:
         # if the requesting user is admin, allow all
         if request.user.is_superuser:
             return True
@@ -160,7 +159,7 @@ class AttendancePermission(permissions.BasePermission):
 
 
 class AbsencePermission(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj: Absence) -> bool:
+    def has_object_permission(self, request, view, obj: models.Absence) -> bool:
         # if the requesting user is admin, allow all
         if request.user.is_superuser:
             return True
@@ -186,7 +185,7 @@ class AbsencePermission(permissions.BasePermission):
 
 
 class AbsenceAttachmentPermission(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj: AbsenceAttachment) -> bool:
+    def has_object_permission(self, request, view, obj: models.AbsenceAttachment) -> bool:
         # if the requesting user is admin, allow all
         if request.user.is_superuser:
             return True

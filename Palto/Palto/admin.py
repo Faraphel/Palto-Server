@@ -6,64 +6,63 @@ The admin is the admin page configuration, describing which model should be visi
 
 from django.contrib import admin
 
-from .models import (Department, StudentGroup, TeachingUnit, StudentCard, TeachingSession, Attendance, Absence,
-                     AbsenceAttachment, User)
+from . import models
 
 
 # Register your models here.
-@admin.register(User)
+@admin.register(models.User)
 class AdminUser(admin.ModelAdmin):
     list_display = ("id", "username", "email", "first_name", "last_name", "is_staff")
     search_fields = ("id", "username", "email", "first_name", "last_name", "is_staff")
     list_filter = ("is_staff",)
 
 
-@admin.register(Department)
+@admin.register(models.Department)
 class AdminDepartment(admin.ModelAdmin):
     list_display = ("id", "name", "email")
     search_fields = ("id", "name", "email")
 
 
-@admin.register(StudentGroup)
+@admin.register(models.StudentGroup)
 class AdminStudentGroup(admin.ModelAdmin):
     list_display = ("id", "name", "owner", "department")
     search_fields = ("id", "name", "owner", "department")
 
 
-@admin.register(TeachingUnit)
+@admin.register(models.TeachingUnit)
 class AdminTeachingUnit(admin.ModelAdmin):
     list_display = ("id", "name")
     search_fields = ("id", "name")
 
 
-@admin.register(StudentCard)
+@admin.register(models.StudentCard)
 class AdminStudentCard(admin.ModelAdmin):
     list_display = ("id", "uid", "owner")
     search_fields = ("id", "uid", "owner")
     readonly_fields = ("uid",)
 
 
-@admin.register(TeachingSession)
+@admin.register(models.TeachingSession)
 class AdminTeachingSession(admin.ModelAdmin):
     list_display = ("id", "start", "end", "duration", "teacher")
     search_fields = ("id", "start", "end", "duration", "teacher")
     list_filter = ("start", "duration")
 
 
-@admin.register(Attendance)
+@admin.register(models.Attendance)
 class AdminAttendance(admin.ModelAdmin):
     list_display = ("id", "date", "student")
     search_fields = ("id", "date", "student")
     list_filter = ("date",)
 
 
-@admin.register(Absence)
+@admin.register(models.Absence)
 class AdminAbsence(admin.ModelAdmin):
     list_display = ("id", "message", "student")
     search_fields = ("id", "message", "student")
 
 
-@admin.register(AbsenceAttachment)
+@admin.register(models.AbsenceAttachment)
 class AdminAbsenceAttachment(admin.ModelAdmin):
     list_display = ("id", "content", "absence")
     search_fields = ("id", "content", "absence")
