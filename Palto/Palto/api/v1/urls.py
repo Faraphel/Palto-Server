@@ -1,3 +1,10 @@
+"""
+Urls for the Palto project's API v1.
+
+All the urls for every model of the API are described here.
+"""
+
+
 from rest_framework import routers
 
 from .views import (UserViewSet, AbsenceAttachmentViewSet, AbsenceViewSet, AttendanceViewSet, TeachingSessionViewSet,

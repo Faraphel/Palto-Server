@@ -1,3 +1,9 @@
+"""
+Models for the Palto project.
+
+Models are the class that represent and abstract the database.
+"""
+
 import uuid
 from datetime import datetime, timedelta
 from typing import Iterable

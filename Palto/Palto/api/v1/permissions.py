@@ -1,3 +1,9 @@
+"""
+Permissions for the Palto project's API v1.
+
+A permission describe which user is allowed to see and modify which objet with the API
+"""
+
 from rest_framework import permissions
 
 from Palto.Palto.models import (Department, TeachingUnit, StudentCard, StudentGroup, User, TeachingSession, Attendance,

@@ -1,3 +1,9 @@
+"""
+Views for the Palto project's API v1.
+
+An API view describe which models should display which files to user with which permissions.
+"""
+
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 

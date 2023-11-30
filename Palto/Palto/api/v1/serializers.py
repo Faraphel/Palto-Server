@@ -1,3 +1,9 @@
+"""
+Serializers for the Palto project's API v1.
+
+A serializers tell the API how should a model should be serialized to be used by an external user.
+"""
+
 from rest_framework import serializers
 
 from Palto.Palto.models import (User, Department, TeachingUnit, StudentCard, TeachingSession, Attendance, Absence,

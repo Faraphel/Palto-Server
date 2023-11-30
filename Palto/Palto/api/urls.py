@@ -1,3 +1,9 @@
+"""
+Urls for the Palto project's API.
+
+This file list all the urls for the Palto API.
+"""
+
 from django.urls import path, include
 from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView, TokenVerifyView
 

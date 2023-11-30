@@ -1,3 +1,9 @@
+"""
+Admin for the Palto project.
+
+The admin is the admin page configuration, describing which model should be visible and which field in the admin page.
+"""
+
 from django.contrib import admin
 
 from .models import (Department, StudentGroup, TeachingUnit, StudentCard, TeachingSession, Attendance, Absence,
@@ -14,14 +20,14 @@ class AdminUser(admin.ModelAdmin):
 
 @admin.register(Department)
 class AdminDepartment(admin.ModelAdmin):
-    list_display = ("id", "name")
-    search_fields = ("id", "name")
+    list_display = ("id", "name", "email")
+    search_fields = ("id", "name", "email")
 
 
 @admin.register(StudentGroup)
 class AdminStudentGroup(admin.ModelAdmin):
-    list_display = ("id", "name")
-    search_fields = ("id", "name")
+    list_display = ("id", "name", "owner", "department")
+    search_fields = ("id", "name", "owner", "department")
 
 
 @admin.register(TeachingUnit)
