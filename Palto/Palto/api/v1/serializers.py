@@ -4,39 +4,40 @@ from Palto.Palto.models import (User, Department, TeachingUnit, StudentCard, Tea
                                 AbsenceAttachment, StudentGroup)
 
 
-# TODO(Raphaël): Les champs sont-ils sûr ? (carte uid ?)
-# TODO(Raphaël): Connection à l'API avec token ?
-# TODO(Raphaël): Voir pour les relations
+# TODO(Raphaël): Voir pour les related_name
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name', 'last_name']
+        fields = ['id', 'username', 'first_name', 'last_name', 'email']
 
 
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Department
-        fields = ['id', 'name', 'mail']
+        fields = ['id', 'name', 'email', 'managers']
+        # NOTE: teachers, students
 
 
 class StudentGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentGroup
-        fields = ['id', 'name']
+        fields = ['id', 'name', 'owner', 'department']
+        # NOTE: students
 
 
 class TeachingUnitSerializer(serializers.ModelSerializer):
     class Meta:
         model = TeachingUnit
         fields = ['id', 'name', 'department']
+        # NOTE: managers, teachers, student_groups
 
 
 class StudentCardSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentCard
-        fields = ['id', 'uid', 'owner']
+        fields = ['id', 'uid', 'department', 'owner']
 
 
 class TeachingSessionSerializer(serializers.ModelSerializer):
@@ -48,13 +49,13 @@ class TeachingSessionSerializer(serializers.ModelSerializer):
 class AttendanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attendance
-        fields = ['id', 'date', 'student']
+        fields = ['id', 'date', 'student', 'session']
 
 
 class AbsenceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Absence
-        fields = ['id', 'message', 'student']
+        fields = ['id', 'message', 'student', 'session']
 
 
 class AbsenceAttachmentSerializer(serializers.ModelSerializer):

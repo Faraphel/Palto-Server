@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -50,12 +51,15 @@ INSTALLED_APPS = [
     'rest_framework',
     "debug_toolbar",
     'django_extensions',
+    'rest_framework_simplejwt',
+    'corsheaders',
 
     "Palto.Palto",
 ]
 
 MIDDLEWARE = [
     "debug_toolbar.middleware.DebugToolbarMiddleware",
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -147,6 +151,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Rest API configuration
 # https://www.django-rest-framework.org/
 REST_FRAMEWORK = {
+    # Default way to authenticate to the REST api.
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+    ],
+
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
     'DEFAULT_PERMISSION_CLASSES': [
@@ -168,5 +179,23 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 30
 }
 
+# JWT Authentification
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+}
+
+
 # User model
 AUTH_USER_MODEL = "Palto.User"
+
+
+# CORS settings
+# TODO(Raphaël): Only in debug !
+CORS_ORIGIN_ALLOW_ALL = True
+
+
+# Login
+LOGIN_URL = "/admin/login/"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"

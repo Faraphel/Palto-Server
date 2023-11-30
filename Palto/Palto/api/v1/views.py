@@ -1,6 +1,9 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
+from .permissions import (UserPermission, DepartmentPermission, StudentGroupPermission, TeachingUnitPermission,
+                          StudentCardPermission, TeachingSessionPermission, AttendancePermission, AbsencePermission,
+                          AbsenceAttachmentPermission)
 from .serializers import (UserSerializer, AbsenceAttachmentSerializer, AbsenceSerializer, AttendanceSerializer,
                           TeachingSessionSerializer, StudentCardSerializer, StudentGroupSerializer,
                           DepartmentSerializer, TeachingUnitSerializer)
@@ -10,72 +13,53 @@ from ...models import (User, AbsenceAttachment, Absence, Attendance, TeachingSes
 
 class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
-
-    def get_queryset(self):
-        return User.all_visible_to(self.request.user)
-
-    def get_permissions(self):
-        return User.permissions_for(self.request.user, self.request.method)
+    queryset = User.objects.all()
+    permission_classes = [IsAuthenticated, UserPermission]
 
 
 class DepartmentViewSet(UserViewSet):
     serializer_class = DepartmentSerializer
-
-    def get_queryset(self):
-        return Department.all_visible_to(self.request.user)
+    queryset = Department.objects.all()
+    permission_classes = [DepartmentPermission]
 
 
 class StudentGroupViewSet(UserViewSet):
     serializer_class = StudentGroupSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return StudentGroup.all_visible_to(self.request.user)
+    queryset = StudentGroup.objects.all()
+    permission_classes = [IsAuthenticated, StudentGroupPermission]
 
 
 class TeachingUnitViewSet(UserViewSet):
     serializer_class = TeachingUnitSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return TeachingUnit.all_visible_to(self.request.user)
+    queryset = TeachingUnit.objects.all()
+    permission_classes = [IsAuthenticated, TeachingUnitPermission]
 
 
 class StudentCardViewSet(UserViewSet):
     serializer_class = StudentCardSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return StudentCard.all_visible_to(self.request.user)
+    queryset = StudentCard.objects.all()
+    permission_classes = [IsAuthenticated, StudentCardPermission]
 
 
 class TeachingSessionViewSet(UserViewSet):
     serializer_class = TeachingSessionSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return TeachingSession.all_visible_to(self.request.user)
+    queryset = TeachingSession.objects.all()
+    permission_classes = [IsAuthenticated, TeachingSessionPermission]
 
 
 class AttendanceViewSet(UserViewSet):
     serializer_class = AttendanceSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return Attendance.all_visible_to(self.request.user)
+    queryset = Attendance.objects.all()
+    permission_classes = [IsAuthenticated, AttendancePermission]
 
 
 class AbsenceViewSet(UserViewSet):
     serializer_class = AbsenceSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return Absence.all_visible_to(self.request.user)
+    queryset = Absence.objects.all()
+    permission_classes = [IsAuthenticated, AbsencePermission]
 
 
 class AbsenceAttachmentViewSet(UserViewSet):
     serializer_class = AbsenceAttachmentSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        return AbsenceAttachment.all_visible_to(self.request.user)
+    queryset = AbsenceAttachment.objects.all()
+    permission_classes = [IsAuthenticated, AbsenceAttachmentPermission]
