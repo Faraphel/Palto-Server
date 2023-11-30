@@ -7,3 +7,4 @@ Tests allow to easily check after modifying the logic behind a feature that ever
 from django.test import TestCase
 
 # Create your tests here.
+from .api.v1 import tests
