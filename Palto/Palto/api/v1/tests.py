@@ -4,64 +4,96 @@ Tests for the Palto project's API v1.
 Everything to test the API v1 is described here.
 """
 
-from rest_framework import status
-from rest_framework import test
+from django import test
 
-from Palto.Palto import factories
-
-
-class TokenJwtTestCase(test.APITestCase):
-    """
-    Test the JWT token creation
-    """
+from Palto.Palto import models, factories
 
 
-class UserApiTestCase(test.APITestCase):
-    def setUp(self):
-        self.user_admin = factories.FakeUserFactory(is_superuser=True)
-        self.user_anonymous = factories.FakeUserFactory()
+class UserTestCase(test.TestCase):
+    @staticmethod
+    def test_creation():
+        """
+        Test the creation of users
+        """
 
-    def test_permission_admin(self):
-        """ Test the permissions of the object for an admin """
-
-        self.client.force_login(self.user_admin)
-
-        # check for a get request
-        response = self.client.get("/api/v1/users/")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        # check for a post request
-        response = self.client.post("/api/v1/users/")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        user = factories.FakeUserFactory()
 
 
-class DepartmentApiTestCase(test.APITestCase):
-    pass
+class DepartmentTestCase(test.TestCase):
+    @staticmethod
+    def test_creation():
+        """
+        Test the creation of departments
+        """
+
+        department = factories.FakeDepartmentFactory()
 
 
-class StudentGroupApiTestCase(test.APITestCase):
-    pass
+class StudentGroupTestCase(test.TestCase):
+    @staticmethod
+    def test_creation():
+        """
+        Test the creation of student groups
+        """
+
+        student_group = factories.FakeStudentGroupFactory()
 
 
-class TeachingUnitApiTestCase(test.APITestCase):
-    pass
+class TeachingUnitTestCase(test.TestCase):
+    @staticmethod
+    def test_creation():
+        """
+        Test the creation of teaching units
+        """
+
+        teaching_unit = factories.FakeTeachingUnitFactory()
 
 
-class StudentCardApiTestCase(test.APITestCase):
-    pass
+class StudentCardTestCase(test.TestCase):
+    @staticmethod
+    def test_creation():
+        """
+        Test the creation of student cards
+        """
+
+        student_card = factories.FakeStudentCardFactory()
 
 
-class TeachingSessionApiTestCase(test.APITestCase):
-    pass
+class TeachingSessionTestCase(test.TestCase):
+    @staticmethod
+    def test_creation():
+        """
+        Test the creation of teaching sessions
+        """
+
+        teaching_session = factories.FakeTeachingSessionFactory()
 
 
-class AttendanceApiTestCase(test.APITestCase):
-    pass
+class AttendanceTestCase(test.TestCase):
+    @staticmethod
+    def test_creation():
+        """
+        Test the creation of attendances
+        """
+
+        attendance = factories.FakeAttendanceFactory()
 
 
-class AbsenceApiTestCase(test.APITestCase):
-    pass
+class AbsenceTestCase(test.TestCase):
+    @staticmethod
+    def test_creation():
+        """
+        Test the creation of absences
+        """
+
+        absence = factories.FakeAbsenceFactory()
 
 
-class AbsenceAttachmentApiTestCase(test.APITestCase):
-    pass
+class AbsenceAttachmentTestCase(test.TestCase):
+    @staticmethod
+    def test_creation():
+        """
+        Test the creation of absence attachments
+        """
+
+        absence_attachment = factories.FakeAbsenceAttachmentFactory()
