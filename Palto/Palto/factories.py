@@ -4,134 +4,198 @@ Factories for the Palto project.
 Factories are class that allow for the automatic creation of instances of our models, primarily for testing purpose.
 """
 import random
+from datetime import datetime, timedelta
 
 import factory
+import faker
+from django.utils import timezone
 
 from Palto.Palto import models
 
 
-# TODO(Raphaël): Voir pour la cohérence
+fake = faker.Faker()
 
 
 class FakeUserFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.User
 
-    username = factory.Faker("user_name")
-    first_name = factory.Faker("first_name")
-    last_name = factory.Faker("last_name")
-    email = factory.Faker("email")
+    username: str = factory.Sequence(lambda obj: f"{fake.user_name()}{random.randint(1000, 9999)}")
+    first_name: str = factory.Faker("first_name")
+    last_name: str = factory.Faker("last_name")
+    email: str = factory.Faker("email")
 
 
 class FakeDepartmentFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Department
 
-    name = factory.Faker("company")
-    email = factory.Faker("company_email")
+    name: str = factory.Faker("company")
+    email: str = factory.Faker("company_email")
 
-    managers = factory.RelatedFactoryList(
-        FakeUserFactory,
-        "managing_departments",
-        size=lambda: random.randint(1, 3)
-    )
-    teachers = factory.RelatedFactoryList(
-        FakeUserFactory,
-        "teaching_departments",
-        size=lambda: random.randint(1, 50)
-    )
-    students = factory.RelatedFactoryList(
-        FakeUserFactory,
-        "studying_departments",
-        size=lambda: random.randint(1, 500)
-    )
+    @factory.post_generation
+    def managers(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted is not None:
+            self.managers.add(*extracted)
+        else:
+            self.managers.add(*[FakeUserFactory() for _ in range(random.randint(1, 3))])
+
+    @factory.post_generation
+    def teachers(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted is not None:
+            self.teachers.add(*extracted)
+        else:
+            self.teachers.add(*[FakeUserFactory() for _ in range(random.randint(2, 10))])
+
+    @factory.post_generation
+    def students(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted is not None:
+            self.students.add(*extracted)
+        else:
+            self.students.add(*[FakeUserFactory() for _ in range(random.randint(50, 150))])
 
 
 class FakeStudentGroupFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.StudentGroup
 
-    name = factory.Faker("administrative_unit")
+    name: str = factory.Faker("administrative_unit")
 
-    owner = factory.SubFactory(FakeUserFactory)
-    department = factory.SubFactory(FakeDepartmentFactory)
-    students = factory.RelatedFactoryList(FakeUserFactory, "student_groups", size=lambda: random.randint(0, 32))
+    owner: models.User = factory.SubFactory(FakeUserFactory)
+    department: models.Department = factory.SubFactory(FakeDepartmentFactory)
+
+    @factory.post_generation
+    def students(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted is not None:
+            self.students.add(*extracted)
+        else:
+            # create a group of between 5 and 50 students from this department
+            self.students.add(*self.department.students.order_by('?')[:random.randint(5, 50)])
 
 
 class FakeTeachingUnitFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.TeachingUnit
 
-    name = factory.Faker("administrative_unit")
+    name: str = factory.Faker("administrative_unit")
 
-    department = factory.SubFactory(
+    department: models.Department = factory.SubFactory(
         FakeDepartmentFactory
     )
-    managers = factory.RelatedFactoryList(
-        FakeUserFactory,
-        "managing_units",
-        size=lambda: random.randint(1, 3)
-    )
-    teachers = factory.RelatedFactoryList(
-        FakeUserFactory,
-        "teaching_units",
-        size=lambda: random.randint(1, 5)
-    )
-    student_groups = factory.RelatedFactoryList(
-        FakeStudentGroupFactory,
-        "studying_units",
-        size=lambda: random.randint(1, 3)
-    )
+
+    @factory.post_generation
+    def managers(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted is not None:
+            self.managers.add(*extracted)
+        else:
+            # create a group of between 1 and 2 managers from the teacher's department
+            self.managers.add(*self.department.teachers.order_by('?')[:random.randint(1, 2)])
+
+    @factory.post_generation
+    def teachers(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted is not None:
+            self.teachers.add(*extracted)
+        else:
+            # create a group of between 2 and 10 teachers from the teacher's department
+            self.teachers.add(*self.department.teachers.order_by('?')[:random.randint(2, 10)])
+
+    @factory.post_generation
+    def student_groups(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted is not None:
+            self.student_groups.add(*extracted)
+        else:
+            # create a group of between 1 and 2 student groups from the department
+            self.student_groups.add(*[
+                FakeStudentGroupFactory.create(department=self.department)
+                for _ in range(random.randint(1, 2))
+            ])
 
 
 class FakeStudentCardFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.StudentCard
 
-    uid = factory.Faker("binary", length=7)
+    uid: bytes = factory.Faker("binary", length=7)
 
-    department = factory.SubFactory(FakeDepartmentFactory)
-    owner = factory.SubFactory(FakeUserFactory)
+    department: models.Department = factory.SubFactory(FakeDepartmentFactory)
+    owner: models.User = factory.SubFactory(FakeUserFactory)
 
 
 class FakeTeachingSessionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.TeachingSession
 
-    start = factory.Faker("date_time")
-    duration = factory.Faker("time_delta")
-    note = factory.Faker("paragraph")
+    start: timedelta = factory.Faker("date_time", tzinfo=timezone.get_current_timezone())
+    duration: timedelta = factory.Faker("time_delta")
+    note: str = factory.Faker("paragraph")
 
-    unit = factory.SubFactory(FakeTeachingUnitFactory)
+    unit: models.TeachingUnit = factory.SubFactory(FakeTeachingUnitFactory)
 
-    group = factory.SubFactory(FakeStudentGroupFactory)
-    owner = factory.SubFactory(FakeUserFactory)
+    group: models.StudentGroup = factory.SubFactory(FakeStudentGroupFactory)
+    teacher: models.User = factory.SubFactory(FakeUserFactory)
 
 
 class FakeAttendanceFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Attendance
 
-    date = factory.Faker("date_time")
+    date: datetime = factory.Faker("date_time", tzinfo=timezone.get_current_timezone())
 
-    student = factory.SubFactory(FakeUserFactory)
-    session = factory.SubFactory(FakeTeachingSessionFactory)
+    student: models.User = factory.SubFactory(FakeUserFactory)
+    session: models.TeachingSession = factory.SubFactory(FakeTeachingSessionFactory)
 
 
 class FakeAbsenceFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Absence
 
-    message = factory.Faker("paragraph")
+    message: str = factory.Faker("paragraph")
 
-    student = factory.SubFactory(FakeUserFactory)
-    session = factory.SubFactory(FakeTeachingSessionFactory)
+    student: models.User = factory.SubFactory(FakeUserFactory)
+
+    @factory.post_generation
+    def sessions(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted is not None:
+            self.sessions.add(*extracted)
+        else:
+            # all the sessions should be in the same department
+            department = FakeDepartmentFactory()
+
+            # create a group of between 1 and 8 sessions from the department
+            self.sessions.add(*[
+                FakeTeachingSessionFactory.create(unit__department=department)
+                for _ in range(random.randint(1, 8))
+            ])
 
 
 class FakeAbsenceAttachmentFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.AbsenceAttachment
 
-    content = factory.django.FileField()
+    content: str = factory.django.FileField()
 
-    absence = factory.SubFactory(FakeAbsenceFactory)
+    absence: models.Absence = factory.SubFactory(FakeAbsenceFactory)

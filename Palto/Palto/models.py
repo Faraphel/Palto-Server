@@ -56,7 +56,7 @@ class Department(models.Model):
     """
 
     id: uuid.UUID = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False, max_length=36)
-    name: str = models.CharField(max_length=64)
+    name: str = models.CharField(max_length=64, unique=True)
     email: str = models.EmailField()
 
     managers = models.ManyToManyField(to=get_user_model(), blank=True, related_name="managing_departments")
@@ -229,14 +229,13 @@ class Absence(models.Model):
     message: str = models.TextField()
 
     student: User = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, related_name="absented_sessions")
-    session: TeachingSession = models.ManyToManyField(to=TeachingSession, blank=True, related_name="absences")
+    sessions: TeachingSession = models.ManyToManyField(to=TeachingSession, blank=True, related_name="absences")
 
     def __repr__(self):
         return (
             f"<{self.__class__.__name__} "
             f"id={str(self.id)[:8]} "
-            f"student={self.student.username} "
-            f"session={str(self.session.id)[:8]}"
+            f"student={self.student.username}"
             f">"
         )
 
