@@ -196,6 +196,6 @@ class FakeAbsenceAttachmentFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.AbsenceAttachment
 
-    content = factory.django.FileField()
+    content: str = factory.django.FileField()
 
-    absence = factory.SubFactory(FakeAbsenceFactory)
+    absence: models.Absence = factory.SubFactory(FakeAbsenceFactory)

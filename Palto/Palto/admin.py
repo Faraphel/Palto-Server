@@ -9,6 +9,9 @@ from django.contrib import admin
 from . import models
 
 
+# TODO: plus de list_filter sur "department" ?
+
+
 # Register your models here.
 @admin.register(models.User)
 class AdminUser(admin.ModelAdmin):
@@ -58,8 +61,9 @@ class AdminAttendance(admin.ModelAdmin):
 
 @admin.register(models.Absence)
 class AdminAbsence(admin.ModelAdmin):
-    list_display = ("id", "message", "student")
-    search_fields = ("id", "message", "student")
+    list_display = ("id", "message", "student", "department", "start", "end")
+    search_fields = ("id", "message", "student", "department", "start", "end")
+    list_filter = ("department", "start", "end")
 
 
 @admin.register(models.AbsenceAttachment)

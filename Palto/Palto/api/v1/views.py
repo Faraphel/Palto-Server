@@ -14,53 +14,71 @@ from ... import models
 
 class UserViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.UserSerializer
-    queryset = models.User.objects.all()
     permission_classes = [IsAuthenticated, permissions.UserPermission]
 
+    def get_queryset(self):
+        return models.User.all_visible_by_user(self.request.user)
 
-class DepartmentViewSet(UserViewSet):
+
+class DepartmentViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.DepartmentSerializer
-    queryset = models.Department.objects.all()
     permission_classes = [permissions.DepartmentPermission]
 
+    def get_queryset(self):
+        return models.Department.all_visible_by_user(self.request.user)
 
-class StudentGroupViewSet(UserViewSet):
+
+class StudentGroupViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.StudentGroupSerializer
-    queryset = models.StudentGroup.objects.all()
     permission_classes = [IsAuthenticated, permissions.StudentGroupPermission]
 
+    def get_queryset(self):
+        return models.StudentGroup.all_visible_by_user(self.request.user)
 
-class TeachingUnitViewSet(UserViewSet):
+
+class TeachingUnitViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.TeachingUnitSerializer
-    queryset = models.TeachingUnit.objects.all()
     permission_classes = [IsAuthenticated, permissions.TeachingUnitPermission]
 
+    def get_queryset(self):
+        return models.TeachingUnit.all_visible_by_user(self.request.user)
 
-class StudentCardViewSet(UserViewSet):
+
+class StudentCardViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.StudentCardSerializer
-    queryset = models.StudentCard.objects.all()
     permission_classes = [IsAuthenticated, permissions.StudentCardPermission]
 
+    def get_queryset(self):
+        return models.StudentCard.all_visible_by_user(self.request.user)
 
-class TeachingSessionViewSet(UserViewSet):
+
+class TeachingSessionViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.TeachingSessionSerializer
-    queryset = models.TeachingSession.objects.all()
     permission_classes = [IsAuthenticated, permissions.TeachingSessionPermission]
 
+    def get_queryset(self):
+        return models.TeachingSession.all_visible_by_user(self.request.user)
 
-class AttendanceViewSet(UserViewSet):
+
+class AttendanceViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.AttendanceSerializer
-    queryset = models.Attendance.objects.all()
     permission_classes = [IsAuthenticated, permissions.AttendancePermission]
 
+    def get_queryset(self):
+        return models.Attendance.all_visible_by_user(self.request.user)
 
-class AbsenceViewSet(UserViewSet):
+
+class AbsenceViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.AbsenceSerializer
-    queryset = models.Absence.objects.all()
     permission_classes = [IsAuthenticated, permissions.AbsencePermission]
 
+    def get_queryset(self):
+        return models.Absence.all_visible_by_user(self.request.user)
 
-class AbsenceAttachmentViewSet(UserViewSet):
+
+class AbsenceAttachmentViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.AbsenceAttachmentSerializer
-    queryset = models.AbsenceAttachment.objects.all()
     permission_classes = [IsAuthenticated, permissions.AbsenceAttachmentPermission]
+
+    def get_queryset(self):
+        return models.AbsenceAttachment.all_visible_by_user(self.request.user)

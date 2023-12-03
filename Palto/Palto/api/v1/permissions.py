@@ -10,201 +10,200 @@ from Palto.Palto import models
 
 
 class UserPermission(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj: models.User) -> bool:
-        # if the requesting user is admin, allow all
-        if request.user.is_superuser:
+    # TODO: has_permission check for authentication
+
+    def has_permission(self, request, view) -> bool:
+        if request.method in permissions.SAFE_METHODS:
+            # for reading, allow everybody
             return True
 
-        if request.method in permissions.SAFE_METHODS:
-            # if the user is in one of the same department as the requesting user, allow read
-            if obj in models.Department.multiple_related_users(request.user.related_departments):
-                return True
+        if models.User.can_user_create(request.user):
+            # for writing, only allowed users
+            return True
 
         return False
+
+    def has_object_permission(self, request, view, obj: models.User) -> bool:
+        if request.method in permissions.SAFE_METHODS:
+            # for reading, only allow if the user can see the object
+            return obj in models.User.all_visible_by_user(request.user)
+
+        else:
+            # for writing, only allow if the user can edit the object
+            return obj in models.User.all_editable_by_user(request.user)
 
 
 class DepartmentPermission(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj: models.Department) -> bool:
-        # if the requesting user is admin, allow all
-        if request.user.is_superuser:
-            return True
-
-        # if the group department is managed by the user, allow all
-        if obj in request.user.managing_departments:
-            return True
-
+    def has_permission(self, request, view) -> bool:
         if request.method in permissions.SAFE_METHODS:
-            # allow read to everybody
+            # for reading, allow everybody
+            return True
+
+        if models.Department.can_user_create(request.user):
+            # for writing, only allowed users
             return True
 
         return False
+
+    def has_object_permission(self, request, view, obj: models.User) -> bool:
+        if request.method in permissions.SAFE_METHODS:
+            # for reading, only allow if the user can see the object
+            return obj in models.Department.all_visible_by_user(request.user)
+
+        else:
+            # for writing, only allow if the user can edit the object
+            return obj in models.Department.all_editable_by_user(request.user)
 
 
 class StudentGroupPermission(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj: models.StudentGroup) -> bool:
-        # if the requesting user is admin, allow all
-        if request.user.is_superuser:
-            return True
-
-        # if the group department is managed by the user, allow all
-        if obj.department in request.user.managing_departments:
-            return True
-
-        # if the user is the owner of the group, allow all
-        if obj.owner is request.user:
-            return True
-
+    def has_permission(self, request, view) -> bool:
         if request.method in permissions.SAFE_METHODS:
-            # if the student is in the group, allow read
-            if obj in request.user.student_groups:
-                return True
+            # for reading, allow everybody
+            return True
 
-            # if the user is a teacher from the same department, allow read
-            if obj.department in request.user.teaching_departments:
-                return True
+        if models.StudentGroup.can_user_create(request.user):
+            # for writing, only allowed users
+            return True
 
         return False
+
+    def has_object_permission(self, request, view, obj: models.User) -> bool:
+        if request.method in permissions.SAFE_METHODS:
+            # for reading, only allow if the user can see the object
+            return obj in models.StudentGroup.all_visible_by_user(request.user)
+
+        else:
+            # for writing, only allow if the user can edit the object
+            return obj in models.StudentGroup.all_editable_by_user(request.user)
 
 
 class TeachingUnitPermission(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj: models.TeachingUnit) -> bool:
-        # if the requesting user is admin, allow all
-        if request.user.is_superuser:
-            return True
-
-        # if the teaching unit department is managed by the user, allow all
-        if obj.department in request.user.managing_departments:
-            return True
-
-        # if the teaching unit is managed by the user, allow all
-        if obj in request.user.managing_units:
-            return True
-
+    def has_permission(self, request, view) -> bool:
         if request.method in permissions.SAFE_METHODS:
-            # if the user is related to the department, allow read
-            if obj.department in request.user.related_departments:
-                return True
+            # for reading, allow everybody
+            return True
+
+        if models.TeachingUnit.can_user_create(request.user):
+            # for writing, only allowed users
+            return True
 
         return False
+
+    def has_object_permission(self, request, view, obj: models.User) -> bool:
+        if request.method in permissions.SAFE_METHODS:
+            # for reading, only allow if the user can see the object
+            return obj in models.TeachingUnit.all_visible_by_user(request.user)
+
+        else:
+            # for writing, only allow if the user can edit the object
+            return obj in models.TeachingUnit.all_editable_by_user(request.user)
 
 
 class StudentCardPermission(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj: models.StudentCard) -> bool:
-        # if the requesting user is admin, allow all
-        if request.user.is_superuser:
-            return True
-
-        # if the card department is managed by the user, allow all
-        if obj.department in request.user.managing_departments:
-            return True
-
+    def has_permission(self, request, view) -> bool:
         if request.method in permissions.SAFE_METHODS:
-            # if the owner of the card is the user, allow read
-            if obj.owner is request.user:
-                return True
+            # for reading, allow everybody
+            return True
+
+        if models.StudentCard.can_user_create(request.user):
+            # for writing, only allowed users
+            return True
 
         return False
+
+    def has_object_permission(self, request, view, obj: models.User) -> bool:
+        if request.method in permissions.SAFE_METHODS:
+            # for reading, only allow if the user can see the object
+            return obj in models.StudentCard.all_visible_by_user(request.user)
+
+        else:
+            # for writing, only allow if the user can edit the object
+            return obj in models.StudentCard.all_editable_by_user(request.user)
 
 
 class TeachingSessionPermission(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj: models.TeachingSession) -> bool:
-        # if the requesting user is admin, allow all
-        if request.user.is_superuser:
-            return True
-
-        # if the teacher is the user, allow all
-        if obj.teacher is request.user:
-            return True
-
-        # if the unit of the session is managed by the user, allow all
-        if obj.unit in request.user.managing_units:
-            return True
-
-        # if the department of the session is managed by the user, allow all
-        if obj.unit.department in request.user.managing_departments:
-            return True
-
+    def has_permission(self, request, view) -> bool:
         if request.method in permissions.SAFE_METHODS:
-            # if the user was one of the student, allow read
-            if request.user in obj.group.students:
-                return True
+            # for reading, allow everybody
+            return True
+
+        if models.TeachingSession.can_user_create(request.user):
+            # for writing, only allowed users
+            return True
 
         return False
+
+    def has_object_permission(self, request, view, obj: models.User) -> bool:
+        if request.method in permissions.SAFE_METHODS:
+            # for reading, only allow if the user can see the object
+            return obj in models.TeachingSession.all_visible_by_user(request.user)
+
+        else:
+            # for writing, only allow if the user can edit the object
+            return obj in models.TeachingSession.all_editable_by_user(request.user)
 
 
 class AttendancePermission(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj: models.Attendance) -> bool:
-        # if the requesting user is admin, allow all
-        if request.user.is_superuser:
-            return True
-
-        # if the teacher is the user, allow all
-        if obj.session.teacher is request.user:
-            return True
-
-        # if the unit of the session is managed by the user, allow all
-        if obj.session.unit in request.user.managing_units:
-            return True
-
-        # if the department of the session is managed by the user, allow all
-        if obj.session.unit.department in request.user.managing_departments:
-            return True
-
+    def has_permission(self, request, view) -> bool:
         if request.method in permissions.SAFE_METHODS:
-            # if the user was the student, allow read
-            if obj.student is request.user:
-                return True
+            # for reading, allow everybody
+            return True
+
+        if models.Attendance.can_user_create(request.user):
+            # for writing, only allowed users
+            return True
 
         return False
+
+    def has_object_permission(self, request, view, obj: models.User) -> bool:
+        if request.method in permissions.SAFE_METHODS:
+            # for reading, only allow if the user can see the object
+            return obj in models.Attendance.all_visible_by_user(request.user)
+
+        else:
+            # for writing, only allow if the user can edit the object
+            return obj in models.Attendance.all_editable_by_user(request.user)
 
 
 class AbsencePermission(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj: models.Absence) -> bool:
-        # if the requesting user is admin, allow all
-        if request.user.is_superuser:
-            return True
-
-        # if the department of the session is managed by the user, allow all
-        if obj.session.unit.department in request.user.managing_departments:
-            return True
-
-        # if the user was the student, allow all
-        if obj.student is request.user:
-            return True
-
+    def has_permission(self, request, view) -> bool:
         if request.method in permissions.SAFE_METHODS:
-            # if the unit of the session is managed by the user, allow read
-            if obj.session.unit in request.user.managing_units:
-                return True
+            # for reading, allow everybody
+            return True
 
-            # if the teacher is the user, allow read
-            if obj.session.teacher is request.user:
-                return True
+        if models.Absence.can_user_create(request.user):
+            # for writing, only allowed users
+            return True
 
         return False
+
+    def has_object_permission(self, request, view, obj: models.User) -> bool:
+        if request.method in permissions.SAFE_METHODS:
+            # for reading, only allow if the user can see the object
+            return obj in models.Absence.all_visible_by_user(request.user)
+
+        else:
+            # for writing, only allow if the user can edit the object
+            return obj in models.Absence.all_editable_by_user(request.user)
 
 
 class AbsenceAttachmentPermission(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj: models.AbsenceAttachment) -> bool:
-        # if the requesting user is admin, allow all
-        if request.user.is_superuser:
-            return True
-
-        # if the department of the session is managed by the user, allow all
-        if obj.absence.session.unit.department in request.user.managing_departments:
-            return True
-
-        # if the user was the student, allow all
-        if obj.absence.student is request.user:
-            return True
-
+    def has_permission(self, request, view) -> bool:
         if request.method in permissions.SAFE_METHODS:
-            # if the unit of the session is managed by the user, allow read
-            if obj.absence.session.unit in request.user.managing_units:
-                return True
+            # for reading, allow everybody
+            return True
 
-            # if the teacher is the user, allow read
-            if obj.absence.session.teacher is request.user:
-                return True
+        if models.AbsenceAttachment.can_user_create(request.user):
+            # for writing, only allowed users
+            return True
 
         return False
+
+    def has_object_permission(self, request, view, obj: models.User) -> bool:
+        if request.method in permissions.SAFE_METHODS:
+            # for reading, only allow if the user can see the object
+            return obj in models.AbsenceAttachment.all_visible_by_user(request.user)
+
+        else:
+            # for writing, only allow if the user can edit the object
+            return obj in models.AbsenceAttachment.all_editable_by_user(request.user)
