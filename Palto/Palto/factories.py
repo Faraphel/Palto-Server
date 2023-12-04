@@ -172,24 +172,10 @@ class FakeAbsenceFactory(factory.django.DjangoModelFactory):
 
     message: str = factory.Faker("paragraph")
 
+    department: models.Department = factory.SubFactory(FakeDepartmentFactory)
     student: models.User = factory.SubFactory(FakeUserFactory)
-
-    @factory.post_generation
-    def sessions(self, create, extracted, **kwargs):
-        if not create:
-            return
-
-        if extracted is not None:
-            self.sessions.add(*extracted)
-        else:
-            # all the sessions should be in the same department
-            department = FakeDepartmentFactory()
-
-            # create a group of between 1 and 8 sessions from the department
-            self.sessions.add(*[
-                FakeTeachingSessionFactory.create(unit__department=department)
-                for _ in range(random.randint(1, 8))
-            ])
+    start: datetime = factory.Faker("date_time", tzinfo=timezone.get_current_timezone())
+    end: datetime = factory.LazyAttribute(lambda obj: obj.start + timedelta(days=random.randint(1, 8)))
 
 
 class FakeAbsenceAttachmentFactory(factory.django.DjangoModelFactory):
