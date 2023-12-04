@@ -7,7 +7,7 @@ Everything to test the API v1 is described here.
 from rest_framework import status
 from rest_framework import test
 
-from Palto.Palto import factories
+from Palto.Palto import factories, models
 from Palto.Palto.api.v1 import serializers
 
 
@@ -39,6 +39,7 @@ class UserApiTestCase(test.APITestCase):
         # check for a get request
         response = self.client.get("/api/v1/users/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["count"], models.User.objects.count())
 
         # check for a post request
         response = self.client.post("/api/v1/users/", data=self.USER_CREATION_DATA)
@@ -93,7 +94,82 @@ class UserApiTestCase(test.APITestCase):
 
 
 class DepartmentApiTestCase(test.APITestCase):
-    pass
+    # fake department creation test
+    DEPARTMENT_CREATION_DATA: dict = {
+        "name": "UFR des Sciences",
+        "email": "ufr.sciences@university.fr",
+    }
+
+    def setUp(self):
+        self.user_admin = factories.FakeUserFactory(is_superuser=True)
+        self.user_other = factories.FakeUserFactory()
+
+    def test_permission_admin(self):
+        """ Test the API permission for an administrator """
+
+        # TODO: use reverse to get the url ?
+        self.client.force_login(self.user_admin)
+
+        # check for a get request
+        response = self.client.get("/api/v1/departments/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["count"], models.Department.objects.count())
+
+        # check for a post request
+        response = self.client.post("/api/v1/departments/", data=self.DEPARTMENT_CREATION_DATA)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_permission_anonymous(self):
+        """ Test the API permission for an anonymous user """
+
+        # TODO: use reverse to get the url ?
+        # TODO: use api endpoint as class attribute ?
+        self.client.logout()
+
+        # check for a get request
+        response = self.client.get("/api/v1/departments/")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        # check for a post request
+        response = self.client.post("/api/v1/departments/", data=self.DEPARTMENT_CREATION_DATA)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_permission_unrelated(self):
+        """ Test the API permission for an unrelated user """
+
+        # TODO: use reverse to get the url ?
+        self.client.force_login(self.user_other)
+
+        # check for a get request and that he can't see anything
+        response = self.client.get("/api/v1/departments/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["count"], 0)
+
+        # check for a post request
+        response = self.client.post("/api/v1/departments/", data=self.DEPARTMENT_CREATION_DATA)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_permission_related(self):
+        """ Test the API permission for a related user """
+
+        # TODO: use reverse to get the url ?
+        student1, student2 = factories.FakeUserFactory(), factories.FakeUserFactory()
+        department = factories.FakeDepartmentFactory(students=(student1, student2))
+
+        self.client.force_login(student1)
+
+        """
+        TODO: this test require to show the field students before creating it.
+        
+        # check for a get request and that he can see the other student
+        response = self.client.get("/api/v1/departments/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn(serializers.UserSerializer(student2).data, response.json()["results"])
+        """
+
+        # check for a post request
+        response = self.client.post("/api/v1/departments/", data=self.DEPARTMENT_CREATION_DATA)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
 class StudentGroupApiTestCase(test.APITestCase):

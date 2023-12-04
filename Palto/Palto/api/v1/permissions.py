@@ -4,206 +4,49 @@ Permissions for the Palto project's API v1.
 A permission describe which user is allowed to see and modify which objet with the API
 """
 
+from typing import Type
+
 from rest_framework import permissions
 
 from Palto.Palto import models
 
 
-class UserPermission(permissions.BasePermission):
-    # TODO: has_permission check for authentication
+def permission_from_helper_class(model: Type[models.ModelPermissionHelper]) -> Type[permissions.BasePermission]:
+    """
+    Create a permission class from a model if it implements ModelPermissionHelper.
+    This make creating permission easier to understand and less redundant.
+    """
 
-    def has_permission(self, request, view) -> bool:
-        if request.method in permissions.SAFE_METHODS:
-            # for reading, allow everybody
-            return True
+    class Permission(permissions.BasePermission):
+        def has_permission(self, request, view) -> bool:
+            if request.method in permissions.SAFE_METHODS:
+                # for reading, allow everybody
+                return True
 
-        if models.User.can_user_create(request.user):
-            # for writing, only allowed users
-            return True
+            if model.can_user_create(request.user):
+                # for writing, only allowed users
+                return True
 
-        return False
+            return False
 
-    def has_object_permission(self, request, view, obj: models.User) -> bool:
-        if request.method in permissions.SAFE_METHODS:
-            # for reading, only allow if the user can see the object
-            return obj in models.User.all_visible_by_user(request.user)
+        def has_object_permission(self, request, view, obj: models.User) -> bool:
+            if request.method in permissions.SAFE_METHODS:
+                # for reading, only allow if the user can see the object
+                return obj in model.all_visible_by_user(request.user)
 
-        else:
-            # for writing, only allow if the user can edit the object
-            return obj in models.User.all_editable_by_user(request.user)
+            else:
+                # for writing, only allow if the user can edit the object
+                return obj in model.all_editable_by_user(request.user)
 
-
-class DepartmentPermission(permissions.BasePermission):
-    def has_permission(self, request, view) -> bool:
-        if request.method in permissions.SAFE_METHODS:
-            # for reading, allow everybody
-            return True
-
-        if models.Department.can_user_create(request.user):
-            # for writing, only allowed users
-            return True
-
-        return False
-
-    def has_object_permission(self, request, view, obj: models.User) -> bool:
-        if request.method in permissions.SAFE_METHODS:
-            # for reading, only allow if the user can see the object
-            return obj in models.Department.all_visible_by_user(request.user)
-
-        else:
-            # for writing, only allow if the user can edit the object
-            return obj in models.Department.all_editable_by_user(request.user)
+    return Permission
 
 
-class StudentGroupPermission(permissions.BasePermission):
-    def has_permission(self, request, view) -> bool:
-        if request.method in permissions.SAFE_METHODS:
-            # for reading, allow everybody
-            return True
-
-        if models.StudentGroup.can_user_create(request.user):
-            # for writing, only allowed users
-            return True
-
-        return False
-
-    def has_object_permission(self, request, view, obj: models.User) -> bool:
-        if request.method in permissions.SAFE_METHODS:
-            # for reading, only allow if the user can see the object
-            return obj in models.StudentGroup.all_visible_by_user(request.user)
-
-        else:
-            # for writing, only allow if the user can edit the object
-            return obj in models.StudentGroup.all_editable_by_user(request.user)
-
-
-class TeachingUnitPermission(permissions.BasePermission):
-    def has_permission(self, request, view) -> bool:
-        if request.method in permissions.SAFE_METHODS:
-            # for reading, allow everybody
-            return True
-
-        if models.TeachingUnit.can_user_create(request.user):
-            # for writing, only allowed users
-            return True
-
-        return False
-
-    def has_object_permission(self, request, view, obj: models.User) -> bool:
-        if request.method in permissions.SAFE_METHODS:
-            # for reading, only allow if the user can see the object
-            return obj in models.TeachingUnit.all_visible_by_user(request.user)
-
-        else:
-            # for writing, only allow if the user can edit the object
-            return obj in models.TeachingUnit.all_editable_by_user(request.user)
-
-
-class StudentCardPermission(permissions.BasePermission):
-    def has_permission(self, request, view) -> bool:
-        if request.method in permissions.SAFE_METHODS:
-            # for reading, allow everybody
-            return True
-
-        if models.StudentCard.can_user_create(request.user):
-            # for writing, only allowed users
-            return True
-
-        return False
-
-    def has_object_permission(self, request, view, obj: models.User) -> bool:
-        if request.method in permissions.SAFE_METHODS:
-            # for reading, only allow if the user can see the object
-            return obj in models.StudentCard.all_visible_by_user(request.user)
-
-        else:
-            # for writing, only allow if the user can edit the object
-            return obj in models.StudentCard.all_editable_by_user(request.user)
-
-
-class TeachingSessionPermission(permissions.BasePermission):
-    def has_permission(self, request, view) -> bool:
-        if request.method in permissions.SAFE_METHODS:
-            # for reading, allow everybody
-            return True
-
-        if models.TeachingSession.can_user_create(request.user):
-            # for writing, only allowed users
-            return True
-
-        return False
-
-    def has_object_permission(self, request, view, obj: models.User) -> bool:
-        if request.method in permissions.SAFE_METHODS:
-            # for reading, only allow if the user can see the object
-            return obj in models.TeachingSession.all_visible_by_user(request.user)
-
-        else:
-            # for writing, only allow if the user can edit the object
-            return obj in models.TeachingSession.all_editable_by_user(request.user)
-
-
-class AttendancePermission(permissions.BasePermission):
-    def has_permission(self, request, view) -> bool:
-        if request.method in permissions.SAFE_METHODS:
-            # for reading, allow everybody
-            return True
-
-        if models.Attendance.can_user_create(request.user):
-            # for writing, only allowed users
-            return True
-
-        return False
-
-    def has_object_permission(self, request, view, obj: models.User) -> bool:
-        if request.method in permissions.SAFE_METHODS:
-            # for reading, only allow if the user can see the object
-            return obj in models.Attendance.all_visible_by_user(request.user)
-
-        else:
-            # for writing, only allow if the user can edit the object
-            return obj in models.Attendance.all_editable_by_user(request.user)
-
-
-class AbsencePermission(permissions.BasePermission):
-    def has_permission(self, request, view) -> bool:
-        if request.method in permissions.SAFE_METHODS:
-            # for reading, allow everybody
-            return True
-
-        if models.Absence.can_user_create(request.user):
-            # for writing, only allowed users
-            return True
-
-        return False
-
-    def has_object_permission(self, request, view, obj: models.User) -> bool:
-        if request.method in permissions.SAFE_METHODS:
-            # for reading, only allow if the user can see the object
-            return obj in models.Absence.all_visible_by_user(request.user)
-
-        else:
-            # for writing, only allow if the user can edit the object
-            return obj in models.Absence.all_editable_by_user(request.user)
-
-
-class AbsenceAttachmentPermission(permissions.BasePermission):
-    def has_permission(self, request, view) -> bool:
-        if request.method in permissions.SAFE_METHODS:
-            # for reading, allow everybody
-            return True
-
-        if models.AbsenceAttachment.can_user_create(request.user):
-            # for writing, only allowed users
-            return True
-
-        return False
-
-    def has_object_permission(self, request, view, obj: models.User) -> bool:
-        if request.method in permissions.SAFE_METHODS:
-            # for reading, only allow if the user can see the object
-            return obj in models.AbsenceAttachment.all_visible_by_user(request.user)
-
-        else:
-            # for writing, only allow if the user can edit the object
-            return obj in models.AbsenceAttachment.all_editable_by_user(request.user)
+UserPermission = permission_from_helper_class(models.User)
+DepartmentPermission = permission_from_helper_class(models.Department)
+StudentGroupPermission = permission_from_helper_class(models.StudentGroup)
+TeachingUnitPermission = permission_from_helper_class(models.TeachingUnit)
+StudentCardPermission = permission_from_helper_class(models.StudentCard)
+TeachingSessionPermission = permission_from_helper_class(models.TeachingSession)
+AttendancePermission = permission_from_helper_class(models.Attendance)
+AbsencePermission = permission_from_helper_class(models.Absence)
+AbsenceAttachmentPermission = permission_from_helper_class(models.AbsenceAttachment)
