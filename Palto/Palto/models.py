@@ -3,10 +3,11 @@ Models for the Palto project.
 
 Models are the class that represent and abstract the database.
 """
-
+import operator
 import uuid
 from abc import abstractmethod
 from datetime import datetime, timedelta
+from functools import reduce
 from typing import Iterable
 
 from django.contrib.auth import get_user_model
@@ -15,14 +16,26 @@ from django.db import models
 from django.db.models import QuerySet, Q, F
 
 
-class ModelPermissionHelper:
+# TODO(Raphaël): split permissions from models for readability
+# TODO(Raphaël): allow other function for permissions than in
 
+
+class ModelPermissionHelper:
     @classmethod
-    @abstractmethod
     def can_user_create(cls, user: "User") -> bool:
         """
         Return True if the user can create a new instance of this object
         """
+        
+        return user.is_superuser
+
+    @classmethod
+    def user_fields_contrains(cls, user: "User") -> dict[str, QuerySet]:
+        """
+        Return the list of fields in that model that the user can modify
+        """
+
+        return {}
 
     @classmethod
     @abstractmethod
@@ -76,17 +89,24 @@ class User(AbstractUser, ModelPermissionHelper):
     @classmethod
     def can_user_create(cls, user: "User") -> bool:
         # if the requesting user is admin
-        return user.is_superuser
-        # TODO: propriétaire d'établissement
+        if user.is_superuser:
+            return True
+
+        # if the user is managing a department, allow him to create user
+        if user.managing_departments.count() > 0:
+            return True
 
     @classmethod
     def all_editable_by_user(cls, user: "User") -> QuerySet:
+        queryset = QuerySet()
+
         if user.is_superuser:
             # if the requesting user is admin
             queryset = cls.objects.all()
         else:
-            queryset = QuerySet()
-        # TODO: propriétaire d'établissement
+            # all the users related to a department the user is managing
+            if user.managing_departments.count() > 0:
+                queryset = cls.objects.all()
 
         return queryset.order_by("pk")
 
@@ -157,8 +177,10 @@ class Department(models.Model, ModelPermissionHelper):
             # if the requesting user is admin
             queryset = cls.objects.all()
         else:
-            queryset = QuerySet()
-        # TODO: propriétaire d'établissement ?
+            queryset = cls.objects.filter(
+                # if the user is the manager of the department
+                managers=user,
+            )
 
         return queryset.order_by("pk")
 
@@ -198,9 +220,27 @@ class StudentGroup(models.Model, ModelPermissionHelper):
     @classmethod
     def can_user_create(cls, user: "User") -> bool:
         # if the requesting user is admin
-        return user.is_superuser
-        # TODO: department managers can create group
-        # TODO: can teacher create group ?
+        if user.is_superuser:
+            return True
+
+        # if the user is managing a department
+        if user.managing_departments.count() > 0:
+            return True
+
+        # if the user is teaching a department
+        if user.teaching_departments.count() > 0:
+            return True
+
+    @classmethod
+    def user_fields_contrains(cls, user: "User") -> dict[str, QuerySet]:
+        # if the user is admin, no contrains
+        if user.is_superuser:
+            return {}
+
+        return {
+            # the managers and teachers can only interact with their departments
+            "department": (user.managing_departments | user.teaching_departments).distinct()
+        }
 
     @classmethod
     def all_editable_by_user(cls, user: "User") -> QuerySet:
@@ -267,8 +307,23 @@ class TeachingUnit(models.Model, ModelPermissionHelper):
     @classmethod
     def can_user_create(cls, user: "User") -> bool:
         # if the requesting user is admin
-        return user.is_superuser
-        # TODO: allow department manager
+        if user.is_superuser:
+            return True
+
+        # if the user is managing a department
+        if user.managing_departments.count() > 0:
+            return True
+
+    @classmethod
+    def user_fields_contrains(cls, user: "User") -> dict[str, QuerySet]:
+        # if the user is admin, no contrains
+        if user.is_superuser:
+            return {}
+
+        return {
+            # the managers can only interact with their departments
+            "department": user.managing_departments
+        }
 
     @classmethod
     def all_editable_by_user(cls, user: "User") -> QuerySet:
@@ -324,8 +379,27 @@ class StudentCard(models.Model, ModelPermissionHelper):
     @classmethod
     def can_user_create(cls, user: "User") -> bool:
         # if the requesting user is admin
-        return user.is_superuser
-        # TODO: Allow new student cards by department managers ?
+        if user.is_superuser:
+            return True
+
+        if user.managing_departments.count() > 0:
+            return True
+
+    @classmethod
+    def user_fields_contrains(cls, user: "User") -> dict[str, QuerySet]:
+        # if the user is admin, no contrains
+        if user.is_superuser:
+            return {}
+
+        return {
+            # the managers can only interact with their departments
+            "department": user.managing_departments,
+            # the owner of the card can be any students in a department that is managed by the user
+            "owner": reduce(
+                operator.or_,
+                (department.students.all() for department in user.managing_departments)
+            )
+        }
 
     @classmethod
     def all_editable_by_user(cls, user: "User") -> QuerySet:
@@ -390,8 +464,64 @@ class TeachingSession(models.Model, ModelPermissionHelper):
     @classmethod
     def can_user_create(cls, user: "User") -> bool:
         # if the requesting user is admin
-        return user.is_superuser
-        # TODO: Allow new teaching session by managers or teachers
+        if user.is_superuser:
+            return True
+
+        # if the user is managing a department
+        if user.managing_departments.count() > 0:
+            return True
+
+        # if the user is managing a unit
+        if user.managing_units.count() > 0:
+            return True
+
+        # if the user is teaching a unit
+        if user.teaching_units.count() > 0:
+            return True
+
+    @classmethod
+    def user_fields_contrains(cls, user: "User") -> dict[str, QuerySet]:
+        # if the user is admin, no contrains
+        if user.is_superuser:
+            return {}
+
+        return {
+            # the managers can only interact with their departments
+            "department": (user.managing_departments | user.teaching_departments).distinct(),
+            "teacher":
+                # the teacher can be any teacher in a department that the user is managing
+                reduce(
+                    operator.or_,
+                    (department.teachers.all() for department in user.managing_departments)
+                ) | reduce(
+                    # or a teacher in a unit that the user is managing
+                    operator.or_,
+                    (department.teachers.all() for department in user.managing_units)
+                ) | (
+                    # or the user itself
+                    User.objects.filter(pk=user.pk)
+                ),
+            "unit":
+                # the unit can be any unit in the department that the user is managing
+                reduce(
+                    operator.or_,
+                    (department.teaching_units.all() for department in user.managing_departments)
+                ) | (
+                    # or the units that the user is teaching
+                    user.teaching_sessions
+                ),
+            "group":
+                # any group of a department where the user is a manager
+                reduce(
+                    operator.or_,
+                    (department.student_groups for department in user.managing_departments)
+                ) |
+                # any group where the user is a manager or a teacher of a unit
+                reduce(
+                    operator.or_,
+                    (unit.student_groups for unit in (user.managing_units | user.teaching_units))
+                )
+        }
 
     @classmethod
     def all_editable_by_user(cls, user: "User") -> QuerySet:
@@ -465,8 +595,67 @@ class Attendance(models.Model, ModelPermissionHelper):
     @classmethod
     def can_user_create(cls, user: "User") -> bool:
         # if the requesting user is admin
-        return user.is_superuser
-        # TODO: Allow new attendance by managers or teachers
+        if user.is_superuser:
+            return True
+
+        # if the user is managing a department
+        if user.managing_departments.count() > 0:
+            return True
+
+        # if the user is managing a unit
+        if user.managing_units.count() > 0:
+            return True
+
+        # if the user is teaching a unit
+        if user.teaching_units.count() > 0:
+            return True
+
+    @classmethod
+    def user_fields_contrains(cls, user: "User") -> dict[str, QuerySet]:
+        # if the user is admin, no contrains
+        if user.is_superuser:
+            return {}
+
+        return {
+            # the managers can only interact with their departments
+            "department": user.managing_departments | user.teaching_departments,
+            "student":
+                # student can be any student from a department the user is managing or teaching
+                reduce(
+                    operator.or_,
+                    (
+                        department.students.all() 
+                        for department in (user.managing_departments | user.teaching_departments)
+                    )
+                ) |
+                # or any student from a unit the user is managing or teaching
+                reduce(
+                    operator.or_,
+                    (
+                        student_group.students.all()
+                        for unit in (user.managing_units | user.teaching_units)
+                        for student_group in unit.student_groups
+                    )
+                ),
+            "session":
+                # the session can be any session where the user is managing the department
+                reduce(
+                    operator.or_,
+                    (
+                        unit.sessions
+                        for department in user.managing_departments
+                        for unit in department.teaching_units
+                    )
+                ) |
+                # or where is the user is a teacher
+                reduce(
+                    operator.or_,
+                    (
+                        unit.sessions
+                        for unit in (user.teaching_units | user.managing_units)
+                    )
+                )
+        }
 
     @classmethod
     def all_editable_by_user(cls, user: "User") -> QuerySet:
@@ -517,7 +706,7 @@ class Absence(models.Model, ModelPermissionHelper):
     message: str = models.TextField()
 
     department: Department = models.ForeignKey(to=Department, on_delete=models.CASCADE, related_name="absences")
-    student: User = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, related_name="absented_sessions")
+    student: User = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, related_name="absences")
     start: datetime = models.DateTimeField()
     end: datetime = models.DateTimeField()
 
@@ -554,8 +743,25 @@ class Absence(models.Model, ModelPermissionHelper):
     @classmethod
     def can_user_create(cls, user: "User") -> bool:
         # if the requesting user is admin
-        return user.is_superuser
-        # TODO: Allow new absence by students
+        if user.is_superuser:
+            return True
+
+        # if the user is a student
+        if user.studying_departments.count() > 0:
+            return True
+
+    @classmethod
+    def user_fields_contrains(cls, user: "User") -> dict[str, QuerySet]:
+        # if the user is admin, no contrains
+        if user.is_superuser:
+            return {}
+
+        return {
+            # all the departments the user is studying in
+            "department": user.studying_departments,
+            # the student itself
+            "student": User.objects.filter(pk=user.pk),
+        }
 
     @classmethod
     def all_editable_by_user(cls, user: "User") -> QuerySet:
@@ -617,8 +823,23 @@ class AbsenceAttachment(models.Model, ModelPermissionHelper):
     @classmethod
     def can_user_create(cls, user: "User") -> bool:
         # if the requesting user is admin
-        return user.is_superuser
-        # TODO: Allow new absence attachment by students
+        if user.is_superuser:
+            return True
+
+        # if the user is a student
+        if user.objects.count():
+            return True
+
+    @classmethod
+    def user_fields_contrains(cls, user: "User") -> dict[str, QuerySet]:
+        # if the user is admin, no contrains
+        if user.is_superuser:
+            return {}
+
+        return {
+            # all the departments the user is studying in
+            "absence": user.absences,
+        }
 
     @classmethod
     def all_editable_by_user(cls, user: "User") -> QuerySet:
