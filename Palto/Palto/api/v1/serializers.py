@@ -25,31 +25,31 @@ class ModelSerializerContrains(serializers.ModelSerializer):
 
     def create(self, validated_data):
         # get the fields that this user can modify
-        field_contrains = self.Meta.model.user_fields_contrains(self.context["request"].user)
+        field_contrains = self.Meta.model.user_fields_contraints(self.context["request"].user)
 
-        # for every constrains
-        for field, constrains in field_contrains.items():
-            # check if the value is in the constrains.
+        # for every constraints
+        for field, constraints in field_contrains.items():
+            # check if the value is in the constraints.
             value = validated_data.get(field)
-            if value is not None and value not in constrains:
+            if value is not None and value not in constraints:
                 raise PermissionDenied(f"You are not allowed to use this value for the field {field}.")
 
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
         # get the fields that this user can modify
-        field_contrains = self.Meta.model.user_fields_contrains(self.context["request"].user)
+        field_contrains = self.Meta.model.user_fields_contraints(self.context["request"].user)
 
-        # for every constrains
-        for field, constrains in field_contrains.items():
-            # check if the value of the request is in the constrains.
+        # for every constraints
+        for field, constraints in field_contrains.items():
+            # check if the value of the request is in the constraints.
             value = validated_data.get(field)
-            if value is not None and value not in constrains:
+            if value is not None and value not in constraints:
                 raise PermissionDenied(f"You are not allowed to use this value for the field {field}.")
 
-            # check if the value of the already existing instance is in the constrains.
+            # check if the value of the already existing instance is in the constraints.
             value = getattr(instance, field, None)
-            if value is not None and value not in constrains:
+            if value is not None and value not in constraints:
                 raise PermissionDenied(f"You are not allowed to use this value for the field {field}.")
 
         # check that the user is managing the department

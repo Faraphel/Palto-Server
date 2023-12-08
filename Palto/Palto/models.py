@@ -30,7 +30,7 @@ class ModelPermissionHelper:
         return user.is_superuser
 
     @classmethod
-    def user_fields_contrains(cls, user: "User") -> dict[str, QuerySet]:
+    def user_fields_contraints(cls, user: "User") -> dict[str, QuerySet]:
         """
         Return the list of fields in that model that the user can modify
         """
@@ -232,7 +232,7 @@ class StudentGroup(models.Model, ModelPermissionHelper):
             return True
 
     @classmethod
-    def user_fields_contrains(cls, user: "User") -> dict[str, QuerySet]:
+    def user_fields_contraints(cls, user: "User") -> dict[str, QuerySet]:
         # if the user is admin, no contrains
         if user.is_superuser:
             return {}
@@ -315,7 +315,7 @@ class TeachingUnit(models.Model, ModelPermissionHelper):
             return True
 
     @classmethod
-    def user_fields_contrains(cls, user: "User") -> dict[str, QuerySet]:
+    def user_fields_contraints(cls, user: "User") -> dict[str, QuerySet]:
         # if the user is admin, no contrains
         if user.is_superuser:
             return {}
@@ -386,7 +386,7 @@ class StudentCard(models.Model, ModelPermissionHelper):
             return True
 
     @classmethod
-    def user_fields_contrains(cls, user: "User") -> dict[str, QuerySet]:
+    def user_fields_contraints(cls, user: "User") -> dict[str, QuerySet]:
         # if the user is admin, no contrains
         if user.is_superuser:
             return {}
@@ -480,7 +480,7 @@ class TeachingSession(models.Model, ModelPermissionHelper):
             return True
 
     @classmethod
-    def user_fields_contrains(cls, user: "User") -> dict[str, QuerySet]:
+    def user_fields_contraints(cls, user: "User") -> dict[str, QuerySet]:
         # if the user is admin, no contrains
         if user.is_superuser:
             return {}
@@ -611,7 +611,7 @@ class Attendance(models.Model, ModelPermissionHelper):
             return True
 
     @classmethod
-    def user_fields_contrains(cls, user: "User") -> dict[str, QuerySet]:
+    def user_fields_contraints(cls, user: "User") -> dict[str, QuerySet]:
         # if the user is admin, no contrains
         if user.is_superuser:
             return {}
@@ -751,7 +751,7 @@ class Absence(models.Model, ModelPermissionHelper):
             return True
 
     @classmethod
-    def user_fields_contrains(cls, user: "User") -> dict[str, QuerySet]:
+    def user_fields_contraints(cls, user: "User") -> dict[str, QuerySet]:
         # if the user is admin, no contrains
         if user.is_superuser:
             return {}
@@ -831,7 +831,7 @@ class AbsenceAttachment(models.Model, ModelPermissionHelper):
             return True
 
     @classmethod
-    def user_fields_contrains(cls, user: "User") -> dict[str, QuerySet]:
+    def user_fields_contraints(cls, user: "User") -> dict[str, QuerySet]:
         # if the user is admin, no contrains
         if user.is_superuser:
             return {}
