@@ -19,16 +19,17 @@ from django.contrib import admin
 from django.urls import path, re_path, include
 from django.views.static import serve
 
-from Palto.Palto.api import urls as api_urls
 from Palto import settings
+from Palto.Palto import urls as palto_views_urls
+from Palto.Palto.api import urls as palto_api_urls
 
 
 urlpatterns = [
     # Application
-    # ...
+    path('', include(palto_views_urls)),
 
     # API
-    path('api/', include(api_urls)),  # Api REST
+    path('api/', include(palto_api_urls)),  # Api REST
 
     # Debug
     path('admin/', admin.site.urls),  # Admin page

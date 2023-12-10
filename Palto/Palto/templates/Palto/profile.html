@@ -1,0 +1,9 @@
+{% extends "Palto/base.html" %}
+
+{% block body %}
+    <div>
+        {{ profile.username }}
+        {{ profile.email }}
+        {% if profile.is_superuser %}Administrator{% endif %}
+    </div>
+{% endblock %}

@@ -9,6 +9,8 @@ from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView
 
 import Palto.Palto.api.v1.urls as v1_urls
 
+app_name = "PaltoAPI"
+
 urlpatterns = [
     # Authentification (JWT)
     path('auth/jwt/token/', TokenObtainPairView.as_view(), name='token'),

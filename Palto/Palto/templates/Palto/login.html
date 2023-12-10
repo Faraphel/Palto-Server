@@ -1,0 +1,9 @@
+{% extends "Palto/base.html" %}
+
+{% block body %}
+    <form method="POST">
+        {% csrf_token %}
+        {{ form_login }}
+        <input type="submit" value="Log in">
+    </form>
+{% endblock %}
