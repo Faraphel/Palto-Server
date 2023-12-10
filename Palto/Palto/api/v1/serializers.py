@@ -5,6 +5,7 @@ A serializers tell the API how should a model should be serialized to be used by
 """
 from typing import Type
 
+from django.forms import model_to_dict
 from rest_framework import serializers
 from rest_framework.exceptions import PermissionDenied
 
@@ -25,31 +26,31 @@ class ModelSerializerContrains(serializers.ModelSerializer):
 
     def create(self, validated_data):
         # get the fields that this user can modify
-        field_contrains = self.Meta.model.user_fields_contraints(self.context["request"].user)
+        field_contraints = self.Meta.model.user_fields_contraints(self.context["request"].user)
 
-        # for every constraints
-        for field, constraints in field_contrains.items():
+        # for every constraint
+        for field, constraints in field_contraints.items():
             # check if the value is in the constraints.
             value = validated_data.get(field)
-            if value is not None and value not in constraints:
+            if value in constraints(validated_data):
                 raise PermissionDenied(f"You are not allowed to use this value for the field {field}.")
 
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
         # get the fields that this user can modify
-        field_contrains = self.Meta.model.user_fields_contraints(self.context["request"].user)
+        field_constraints = self.Meta.model.user_fields_contraints(self.context["request"].user)
 
-        # for every constraints
-        for field, constraints in field_contrains.items():
+        # for every constraint
+        for field, constraints in field_constraints.items():
             # check if the value of the request is in the constraints.
             value = validated_data.get(field)
-            if value is not None and value not in constraints:
+            if value in constraints(validated_data):
                 raise PermissionDenied(f"You are not allowed to use this value for the field {field}.")
 
             # check if the value of the already existing instance is in the constraints.
             value = getattr(instance, field, None)
-            if value is not None and value not in constraints:
+            if value in constraints(model_to_dict(instance)):
                 raise PermissionDenied(f"You are not allowed to use this value for the field {field}.")
 
         # check that the user is managing the department

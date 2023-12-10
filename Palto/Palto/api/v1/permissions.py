@@ -27,8 +27,6 @@ def permission_from_helper_class(model: Type[models.ModelPermissionHelper]) -> T
                 # for writing, only allowed users
                 return True
 
-            return False
-
         def has_object_permission(self, request, view, obj: models.User) -> bool:
             if request.method in permissions.SAFE_METHODS:
                 # for reading, only allow if the user can see the object

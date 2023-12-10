@@ -3,21 +3,19 @@ Models for the Palto project.
 
 Models are the class that represent and abstract the database.
 """
-import operator
+
 import uuid
 from abc import abstractmethod
 from datetime import datetime, timedelta
-from functools import reduce
-from typing import Iterable
+from typing import Iterable, Callable, Any
 
-from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import QuerySet, Q, F
 
 
 # TODO(Raphaël): split permissions from models for readability
-# TODO(Raphaël): allow other function for permissions than in
 
 
 class ModelPermissionHelper:
@@ -26,13 +24,14 @@ class ModelPermissionHelper:
         """
         Return True if the user can create a new instance of this object
         """
-        
+
         return user.is_superuser
 
     @classmethod
-    def user_fields_contraints(cls, user: "User") -> dict[str, QuerySet]:
+    def user_fields_contraints(cls, user: "User") -> dict[str, Callable[[dict], QuerySet]]:
         """
-        Return the list of fields in that model that the user can modify
+        Return a dictionary of field associated to a function giving all the allowed values for this field.
+        For example, this can be used to check that a user manage a department before allowing modification.
         """
 
         return {}
@@ -134,9 +133,9 @@ class Department(models.Model, ModelPermissionHelper):
     name: str = models.CharField(max_length=64, unique=True)
     email: str = models.EmailField()
 
-    managers = models.ManyToManyField(to=get_user_model(), blank=True, related_name="managing_departments")
-    teachers = models.ManyToManyField(to=get_user_model(), blank=True, related_name="teaching_departments")
-    students = models.ManyToManyField(to=get_user_model(), blank=True, related_name="studying_departments")
+    managers = models.ManyToManyField(to=User, blank=True, related_name="managing_departments")
+    teachers = models.ManyToManyField(to=User, blank=True, related_name="teaching_departments")
+    students = models.ManyToManyField(to=User, blank=True, related_name="studying_departments")
 
     def __repr__(self):
         return f"<{self.__class__.__name__} id={str(self.id)[:8]} name={self.name!r}>"
@@ -205,15 +204,28 @@ class StudentGroup(models.Model, ModelPermissionHelper):
     id: uuid.UUID = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False, max_length=36)
     name: str = models.CharField(max_length=128)
 
-    owner = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, related_name="owning_groups")
     department = models.ForeignKey(to=Department, on_delete=models.CASCADE, related_name="student_groups")
-    students = models.ManyToManyField(to=get_user_model(), blank=True, related_name="student_groups")
+    owner = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name="owning_groups")
+    students = models.ManyToManyField(to=User, blank=True, related_name="student_groups")
 
     def __repr__(self):
         return f"<{self.__class__.__name__} id={str(self.id)[:8]} name={self.name!r}>"
 
     def __str__(self):
         return self.name
+
+    # validators
+
+    def clean(self):
+        super().clean()
+
+        # owner check
+        if self.department not in self.owner.teaching_departments:
+            raise ValidationError("The owner is not related to the department.")
+
+        # students check
+        if not all(self.department in student.studying_departments for student in self.students.all()):
+            raise ValidationError("A student is not related to the department.")
 
     # permissions
 
@@ -232,14 +244,16 @@ class StudentGroup(models.Model, ModelPermissionHelper):
             return True
 
     @classmethod
-    def user_fields_contraints(cls, user: "User") -> dict[str, QuerySet]:
+    def user_fields_contraints(cls, user: "User") -> dict[str, Callable[[dict], QuerySet]]:
         # if the user is admin, no contrains
         if user.is_superuser:
             return {}
 
         return {
-            # the managers and teachers can only interact with their departments
-            "department": (user.managing_departments | user.teaching_departments).distinct()
+            # the user can only interact with a related departments
+            "department": lambda data: user.managing_departments | user.teaching_departments,
+            # the owner must be a teacher or a manager of this department
+            "owner": lambda data: data["department"].managers | data["department"].teachers,
         }
 
     @classmethod
@@ -292,8 +306,8 @@ class TeachingUnit(models.Model, ModelPermissionHelper):
 
     department = models.ForeignKey(to=Department, on_delete=models.CASCADE, related_name="teaching_units")
 
-    managers = models.ManyToManyField(to=get_user_model(), blank=True, related_name="managing_units")
-    teachers = models.ManyToManyField(to=get_user_model(), blank=True, related_name="teaching_units")
+    managers = models.ManyToManyField(to=User, blank=True, related_name="managing_units")
+    teachers = models.ManyToManyField(to=User, blank=True, related_name="teaching_units")
     student_groups = models.ManyToManyField(to=StudentGroup, blank=True, related_name="studying_units")
 
     def __repr__(self):
@@ -301,6 +315,23 @@ class TeachingUnit(models.Model, ModelPermissionHelper):
 
     def __str__(self):
         return self.name
+
+    # validations
+
+    def clean(self):
+        super().clean()
+
+        # managers check
+        if not all(self.department in manager.managing_departments for manager in self.managers.all()):
+            raise ValidationError("A manager is not related to the department.")
+
+        # teachers check
+        if not all(self.department in teacher.teaching_departments for teacher in self.teachers.all()):
+            raise ValidationError("A teacher is not related to the department.")
+
+        # student groups check
+        if not all(self.department in student_group.department for student_group in self.student_groups.all()):
+            raise ValidationError("A student group is not related to the department.")
 
     # permissions
 
@@ -315,14 +346,14 @@ class TeachingUnit(models.Model, ModelPermissionHelper):
             return True
 
     @classmethod
-    def user_fields_contraints(cls, user: "User") -> dict[str, QuerySet]:
+    def user_fields_contraints(cls, user: "User") -> dict[str, Callable[[dict], QuerySet]]:
         # if the user is admin, no contrains
         if user.is_superuser:
             return {}
 
         return {
-            # the managers can only interact with their departments
-            "department": user.managing_departments
+            # a user can only interact with a related departments
+            "department": lambda data: user.managing_departments | user.teaching_departments
         }
 
     @classmethod
@@ -369,10 +400,19 @@ class StudentCard(models.Model, ModelPermissionHelper):
     uid: bytes = models.BinaryField(max_length=7)
 
     department: Department = models.ForeignKey(to=Department, on_delete=models.CASCADE, related_name="student_cards")
-    owner: User = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, related_name="student_cards")
+    owner: User = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name="student_cards")
 
     def __repr__(self):
         return f"<{self.__class__.__name__} id={str(self.id)[:8]} owner={self.owner.username!r}>"
+
+    # validations
+
+    def clean(self):
+        super().clean()
+
+        # owner check
+        if self.department not in self.owner.studying_departments:
+            raise ValidationError("The student is not related to the department.")
 
     # permissions
 
@@ -386,19 +426,14 @@ class StudentCard(models.Model, ModelPermissionHelper):
             return True
 
     @classmethod
-    def user_fields_contraints(cls, user: "User") -> dict[str, QuerySet]:
+    def user_fields_contraints(cls, user: "User") -> dict[str, Callable[[Any, dict], bool]]:
         # if the user is admin, no contrains
         if user.is_superuser:
             return {}
 
         return {
-            # the managers can only interact with their departments
-            "department": user.managing_departments,
-            # the owner of the card can be any students in a department that is managed by the user
-            "owner": reduce(
-                operator.or_,
-                (department.students.all() for department in user.managing_departments)
-            )
+            # a user can only interact with a related departments
+            "department": lambda field, data: field in user.managing_departments,
         }
 
     @classmethod
@@ -447,7 +482,7 @@ class TeachingSession(models.Model, ModelPermissionHelper):
     unit = models.ForeignKey(to=TeachingUnit, on_delete=models.CASCADE, related_name="sessions")
 
     group = models.ForeignKey(to=StudentGroup, on_delete=models.CASCADE, related_name="teaching_sessions")
-    teacher = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, related_name="teaching_sessions")
+    teacher = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name="teaching_sessions")
 
     def __repr__(self):
         return f"<{self.__class__.__name__} id={str(self.id)[:8]} unit={self.unit.name!r} start={self.start}>"
@@ -458,6 +493,19 @@ class TeachingSession(models.Model, ModelPermissionHelper):
     @property
     def end(self) -> datetime:
         return self.start + self.duration
+
+    # validations
+
+    def clean(self):
+        super().clean()
+
+        # group check
+        if self.unit.department not in self.group.department:
+            raise ValidationError("The group is not related to the unit department.")
+
+        # teacher check
+        if self.unit not in self.teacher.teaching_units:
+            raise ValidationError("The teacher is not related to the unit.")
 
     # permissions
 
@@ -480,47 +528,21 @@ class TeachingSession(models.Model, ModelPermissionHelper):
             return True
 
     @classmethod
-    def user_fields_contraints(cls, user: "User") -> dict[str, QuerySet]:
+    def user_fields_contraints(cls, user: "User") -> dict[str, Callable[[Any, dict], bool]]:
         # if the user is admin, no contrains
         if user.is_superuser:
             return {}
 
         return {
-            # the managers can only interact with their departments
-            "department": (user.managing_departments | user.teaching_departments).distinct(),
-            "teacher":
-                # the teacher can be any teacher in a department that the user is managing
-                reduce(
-                    operator.or_,
-                    (department.teachers.all() for department in user.managing_departments)
-                ) | reduce(
-                    # or a teacher in a unit that the user is managing
-                    operator.or_,
-                    (department.teachers.all() for department in user.managing_units)
-                ) | (
-                    # or the user itself
-                    User.objects.filter(pk=user.pk)
-                ),
-            "unit":
-                # the unit can be any unit in the department that the user is managing
-                reduce(
-                    operator.or_,
-                    (department.teaching_units.all() for department in user.managing_departments)
-                ) | (
-                    # or the units that the user is teaching
-                    user.teaching_sessions
-                ),
-            "group":
-                # any group of a department where the user is a manager
-                reduce(
-                    operator.or_,
-                    (department.student_groups for department in user.managing_departments)
-                ) |
-                # any group where the user is a manager or a teacher of a unit
-                reduce(
-                    operator.or_,
-                    (unit.student_groups for unit in (user.managing_units | user.teaching_units))
-                )
+            # the managers can only interact with their units
+            "unit": lambda data: (
+                # all the units the user is managing
+                user.managing_units |
+                # all the units the user is teaching
+                user.teaching_units |
+                # all the units of the department the user is managing
+                TeachingUnit.objects.filter(pk__in=user.managing_departments.values("teaching_units"))
+            )
         }
 
     @classmethod
@@ -571,7 +593,7 @@ class Attendance(models.Model, ModelPermissionHelper):
     date: datetime = models.DateTimeField()
 
     student: User = models.ForeignKey(
-        to=get_user_model(),
+        to=User,
         on_delete=models.CASCADE,
         related_name="attended_sessions"
     )
@@ -589,6 +611,15 @@ class Attendance(models.Model, ModelPermissionHelper):
             f"session={str(self.session.id)[:8]}"
             f">"
         )
+
+    # validations
+
+    def clean(self):
+        super().clean()
+
+        # student check
+        if self.student not in self.session.group.students:
+            raise ValidationError("The student is not related to the student group.")
 
     # permissions
 
@@ -611,50 +642,24 @@ class Attendance(models.Model, ModelPermissionHelper):
             return True
 
     @classmethod
-    def user_fields_contraints(cls, user: "User") -> dict[str, QuerySet]:
+    def user_fields_contraints(cls, user: "User") -> dict[str, Callable[[Any, dict], bool]]:
         # if the user is admin, no contrains
         if user.is_superuser:
             return {}
 
         return {
-            # the managers can only interact with their departments
-            "department": user.managing_departments | user.teaching_departments,
-            "student":
-                # student can be any student from a department the user is managing or teaching
-                reduce(
-                    operator.or_,
-                    (
-                        department.students.all() 
-                        for department in (user.managing_departments | user.teaching_departments)
-                    )
-                ) |
-                # or any student from a unit the user is managing or teaching
-                reduce(
-                    operator.or_,
-                    (
-                        student_group.students.all()
-                        for unit in (user.managing_units | user.teaching_units)
-                        for student_group in unit.student_groups
-                    )
-                ),
-            "session":
-                # the session can be any session where the user is managing the department
-                reduce(
-                    operator.or_,
-                    (
-                        unit.sessions
-                        for department in user.managing_departments
-                        for unit in department.teaching_units
-                    )
-                ) |
-                # or where is the user is a teacher
-                reduce(
-                    operator.or_,
-                    (
-                        unit.sessions
-                        for unit in (user.teaching_units | user.managing_units)
-                    )
+            "session": lambda data: (
+                # the sessions that the user has taught
+                user.teaching_sessions |
+                # a session of a unit the user is managing
+                TeachingSession.objects.filter(pk__in=user.managing_units.values("sessions")) |
+                # all the sessions in a department the user is managing
+                TeachingSession.objects.filter(
+                    pk__in=TeachingUnit.objects.filter(
+                        pk__in=user.managing_departments.values("teaching_units")
+                    ).values("sessions")
                 )
+            )
         }
 
     @classmethod
@@ -706,7 +711,7 @@ class Absence(models.Model, ModelPermissionHelper):
     message: str = models.TextField()
 
     department: Department = models.ForeignKey(to=Department, on_delete=models.CASCADE, related_name="absences")
-    student: User = models.ForeignKey(to=get_user_model(), on_delete=models.CASCADE, related_name="absences")
+    student: User = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name="absences")
     start: datetime = models.DateTimeField()
     end: datetime = models.DateTimeField()
 
@@ -723,6 +728,15 @@ class Absence(models.Model, ModelPermissionHelper):
 
     def __str__(self):
         return f"[{str(self.id)[:8]}] {self.student}"
+
+    # validations
+
+    def clean(self):
+        super().clean()
+
+        # student check
+        if self.department not in self.student.studying_departments:
+            raise ValidationError("The student is not related to the department.")
 
     # properties
 
@@ -751,16 +765,14 @@ class Absence(models.Model, ModelPermissionHelper):
             return True
 
     @classmethod
-    def user_fields_contraints(cls, user: "User") -> dict[str, QuerySet]:
+    def user_fields_contraints(cls, user: "User") -> dict[str, Callable[[dict], QuerySet]]:
         # if the user is admin, no contrains
         if user.is_superuser:
             return {}
 
         return {
             # all the departments the user is studying in
-            "department": user.studying_departments,
-            # the student itself
-            "student": User.objects.filter(pk=user.pk),
+            "department": lambda data: user.studying_departments,
         }
 
     @classmethod
@@ -831,14 +843,14 @@ class AbsenceAttachment(models.Model, ModelPermissionHelper):
             return True
 
     @classmethod
-    def user_fields_contraints(cls, user: "User") -> dict[str, QuerySet]:
+    def user_fields_contraints(cls, user: "User") -> dict[str, Callable[[dict], QuerySet]]:
         # if the user is admin, no contrains
         if user.is_superuser:
             return {}
 
         return {
             # all the departments the user is studying in
-            "absence": user.absences,
+            "absence": lambda data: user.absences,
         }
 
     @classmethod
