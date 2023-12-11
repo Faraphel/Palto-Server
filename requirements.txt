@@ -1,8 +1,15 @@
+# Django libraries
 django
 djangorestframework
-django-filter
 django-debug-toolbar
 django-extensions
+djangorestframework-simplejwt[crypto]
+django-cors-headers
 Werkzeug
 
+# Tests libraries
+faker
+factory_boy
+
+# Other librairies
 markdown

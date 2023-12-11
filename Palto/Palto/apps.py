@@ -1,3 +1,9 @@
+"""
+Apps for the Palto project.
+
+The app is the configuration for this part of the project.
+"""
+
 from django.apps import AppConfig
 
 
