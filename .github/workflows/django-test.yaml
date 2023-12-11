@@ -25,6 +25,11 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+    - name: Check Database Migrations 
+      run: |
+        python manage.py makemigrations
+      env:
+        DJANGO_SECRET: ${{ secrets.DJANGO_SECRET }}
     - name: Run Tests
       run: |
         python manage.py test
