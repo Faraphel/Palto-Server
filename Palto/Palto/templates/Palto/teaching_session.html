@@ -1,0 +1,27 @@
+{% extends "Palto/base.html" %}
+
+{% block body %}
+    {# table of all the sessions #}
+    <table>
+        <thead>
+            <tr>
+                <th>Identifiant</th>
+                <th>Début</th>
+                <th>Durée</th>
+                <th>Unité d'Enseignement</th>
+                <th>Enseignant</th>
+                <th>Groupe</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ session.id }}</td>
+                <td>{{ session.start }}</td>
+                <td>{{ session.duration }}</td>
+                <td>{{ session.unit }}</td>
+                <td>{{ session.teacher }}</td>
+                <td>{{ session.group }}</td>
+            </tr>
+        </tbody>
+    </table>
+{% endblock %}

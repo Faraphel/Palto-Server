@@ -1,0 +1,36 @@
+{% extends "Palto/base.html" %}
+
+{% block body %}
+    {# table of all the sessions #}
+    <table>
+        <thead>
+            <tr>
+                <th>Identifiant</th>
+                <th>Début</th>
+                <th>Durée</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for session in sessions %}
+                <tr>
+                    <td><a href="{% url "Palto:teaching_session" session.id %}">{{ session.id }}</a></td>
+                    <td>{{ session.start }}</td>
+                    <td>{{ session.duration }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {# page navigator #}
+    <div>
+        {% if sessions.has_previous %}
+            <a href="?page={{ sessions.previous_page_number }}">Previous</a>
+        {% endif %}
+
+        <a>{{ sessions.number }}</a>
+
+        {% if sessions.has_next %}
+            <a href="?page={{ sessions.next_page_number }}">Next</a>
+        {% endif %}
+    </div>
+{% endblock %}

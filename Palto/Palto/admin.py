@@ -61,9 +61,9 @@ class AdminAttendance(admin.ModelAdmin):
 
 @admin.register(models.Absence)
 class AdminAbsence(admin.ModelAdmin):
-    list_display = ("id", "message", "student", "department", "start", "end")
-    search_fields = ("id", "message", "student", "department", "start", "end")
-    list_filter = ("department", "start", "end")
+    list_display = ("id", "message", "student", "start", "end")
+    search_fields = ("id", "message", "student", "start", "end")
+    list_filter = ("start", "end")
 
 
 @admin.register(models.AbsenceAttachment)

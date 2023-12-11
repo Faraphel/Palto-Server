@@ -63,6 +63,9 @@ class User(AbstractUser, ModelPermissionHelper):
     def __repr__(self):
         return f"<{self.__class__.__name__} id={str(self.id)[:8]} username={self.username!r}>"
 
+    def __str__(self):
+        return f"{self.first_name} {self.last_name.upper()}"
+
     @staticmethod
     def multiple_related_departments(users: Iterable["User"]) -> QuerySet["Department"]:
         """
