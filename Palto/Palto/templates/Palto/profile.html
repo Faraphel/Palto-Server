@@ -1,9 +1,74 @@
 {% extends "Palto/base.html" %}
+{% load dict_tags %}
 
 {% block body %}
     <div>
         {{ profile.username }}
         {{ profile.email }}
         {% if profile.is_superuser %}Administrator{% endif %}
+
+        {# user related departments table #}
+        <table>
+            {% for department, profile_department_data in profile_departments_data.items %}
+            <tr>
+                {# department name #}
+                <th>{{ department.name }}</th>
+                {# relation information #}
+                <td>
+                    <table>
+                        {# user managing the department #}
+                        {% if profile_department_data|dict_get:"is_manager" %}
+                        <tr>
+                            <td>Responsable de Département</td>
+                            <td>/</td>
+                        </tr>
+                        {% endif %}
+                        {# user managing units #}
+                        {% with managing_units=profile_department_data|dict_get:"managing_units" %}
+                            {% if managing_units|length > 0 %}
+                                <tr>
+                                    <td>Responsable d'UE</td>
+                                    <td>
+                                        {% for managing_unit in managing_units %}
+                                            <a href="{# TODO(Faraphel): redirect to unit #}">{{ managing_unit.name }}</a>
+                                            {% if not forloop.last %}<br/>{% endif %}
+                                        {% endfor %}
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endwith %}
+                        {# user teaching units #}
+                        {% with teaching_units=profile_department_data|dict_get:"teaching_units" %}
+                            {% if teaching_units|length > 0 %}
+                                <tr>
+                                    <td>Enseignant</td>
+                                    <td>
+                                        {% for teaching_unit in teaching_units %}
+                                            <a href="{# TODO(Faraphel): redirect to unit #}">{{ teaching_unit.name }}</a>
+                                            {% if not forloop.last %}<br/>{% endif %}
+                                        {% endfor %}
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endwith %}
+                        {# user studying groups #}
+                        {% with student_groups=profile_department_data|dict_get:"student_groups" %}
+                            {% if student_groups|length > 0 %}
+                                <tr>
+                                    <td>Groupe Étudiant</td>
+                                    <td>
+                                        {% for student_group in student_groups %}
+                                            <a href="{# TODO(Faraphel): redirect to group #}">{{ student_group.name }}</a>
+                                            {% if not forloop.last %}<br/>{% endif %}
+                                        {% endfor %}
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endwith %}
+                    </table>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
     </div>
 {% endblock %}

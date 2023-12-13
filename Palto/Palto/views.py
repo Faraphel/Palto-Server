@@ -13,7 +13,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 
 from Palto.Palto import models
 from Palto.Palto.forms import LoginForm
-
+from Palto.Palto.utils import get_object_or_none
 
 ELEMENT_PER_PAGE: int = 30
 
@@ -71,12 +71,25 @@ def profile_view(request: WSGIRequest, profile_id: uuid.UUID = None):
     # get the corresponding user from its id.
     profile = get_object_or_404(models.User, id=profile_id)
 
+    # prepare the data and the "complex" query for the template
+    profile_departments_data = {
+        department: {
+            "is_manager": profile in department.managers.all(),
+            "managing_units": models.TeachingUnit.objects.filter(department=department, managers=profile).all(),
+            "teaching_units": models.TeachingUnit.objects.filter(department=department, teachers=profile).all(),
+            "student_groups": models.StudentGroup.objects.filter(department=department, students=profile).all(),
+        }
+
+        for department in profile.related_departments
+    }
+
     # render the page
     return render(
         request,
         "Palto/profile.html",
         context=dict(
-            profile=profile
+            profile=profile,
+            profile_departments_data=profile_departments_data,
         )
     )
 
@@ -110,11 +123,30 @@ def teaching_session_view(request: WSGIRequest, session_id: uuid.UUID):
         # TODO: syntaxic sugar session.visible_by_user(request.user)
         return HttpResponseForbidden()
 
+    # prepare the data and the "complex" query for the template
+    session_students_data = {
+        student: {
+            "attendance": get_object_or_none(
+                models.Attendance.objects,
+                session=session,
+                student=student
+            ),
+            "absence": get_object_or_none(
+                models.Absence.objects,
+                student=student,
+                start__gte=session.start, end__lte=session.end
+            ),
+        }
+
+        for student in session.group.students.all()
+    }
+
     # render the page
     return render(
         request,
         "Palto/teaching_session.html",
         context=dict(
-            session=session
+            session=session,
+            session_students_data=session_students_data,
         )
     )

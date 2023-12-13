@@ -61,10 +61,14 @@ class User(AbstractUser, ModelPermissionHelper):
     id: uuid.UUID = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False, max_length=36)
 
     def __repr__(self):
-        return f"<{self.__class__.__name__} id={str(self.id)[:8]} username={self.username!r}>"
+        return f"<{self.__class__.__name__} id={self.short_id} username={self.username!r}>"
 
     def __str__(self):
         return f"{self.first_name} {self.last_name.upper()}"
+
+    @property
+    def short_id(self) -> str:
+        return str(self.id)[:8]
 
     @staticmethod
     def multiple_related_departments(users: Iterable["User"]) -> QuerySet["Department"]:
@@ -141,10 +145,14 @@ class Department(models.Model, ModelPermissionHelper):
     students = models.ManyToManyField(to=User, blank=True, related_name="studying_departments")
 
     def __repr__(self):
-        return f"<{self.__class__.__name__} id={str(self.id)[:8]} name={self.name!r}>"
+        return f"<{self.__class__.__name__} id={self.short_id} name={self.name!r}>"
 
     def __str__(self):
         return self.name
+
+    @property
+    def short_id(self) -> str:
+        return str(self.id)[:8]
 
     @staticmethod
     def multiple_related_users(departments: Iterable["Department"]) -> QuerySet["User"]:
@@ -212,10 +220,14 @@ class StudentGroup(models.Model, ModelPermissionHelper):
     students = models.ManyToManyField(to=User, blank=True, related_name="student_groups")
 
     def __repr__(self):
-        return f"<{self.__class__.__name__} id={str(self.id)[:8]} name={self.name!r}>"
+        return f"<{self.__class__.__name__} id={self.short_id} name={self.name!r}>"
 
     def __str__(self):
         return self.name
+
+    @property
+    def short_id(self) -> str:
+        return str(self.id)[:8]
 
     # validators
 
@@ -223,11 +235,11 @@ class StudentGroup(models.Model, ModelPermissionHelper):
         super().clean()
 
         # owner check
-        if self.department not in self.owner.teaching_departments:
+        if self.department not in self.owner.teaching_departments.all():
             raise ValidationError("The owner is not related to the department.")
 
         # students check
-        if not all(self.department in student.studying_departments for student in self.students.all()):
+        if not all(self.department in student.studying_departments.all() for student in self.students.all()):
             raise ValidationError("A student is not related to the department.")
 
     # permissions
@@ -254,9 +266,9 @@ class StudentGroup(models.Model, ModelPermissionHelper):
 
         return {
             # the user can only interact with a related departments
-            "department": lambda data: user.managing_departments | user.teaching_departments,
+            "department": lambda data: (user.managing_departments | user.teaching_departments).all(),
             # the owner must be a teacher or a manager of this department
-            "owner": lambda data: data["department"].managers | data["department"].teachers,
+            "owner": lambda data: (data["department"].managers | data["department"].teachers).all(),
         }
 
     @classmethod
@@ -314,10 +326,14 @@ class TeachingUnit(models.Model, ModelPermissionHelper):
     student_groups = models.ManyToManyField(to=StudentGroup, blank=True, related_name="studying_units")
 
     def __repr__(self):
-        return f"<{self.__class__.__name__} id={str(self.id)[:8]} name={self.name!r}>"
+        return f"<{self.__class__.__name__} id={self.short_id} name={self.name!r}>"
 
     def __str__(self):
         return self.name
+
+    @property
+    def short_id(self) -> str:
+        return str(self.id)[:8]
 
     # validations
 
@@ -325,15 +341,15 @@ class TeachingUnit(models.Model, ModelPermissionHelper):
         super().clean()
 
         # managers check
-        if not all(self.department in manager.managing_departments for manager in self.managers.all()):
+        if not all(self.department in manager.managing_departments.all() for manager in self.managers.all()):
             raise ValidationError("A manager is not related to the department.")
 
         # teachers check
-        if not all(self.department in teacher.teaching_departments for teacher in self.teachers.all()):
+        if not all(self.department in teacher.teaching_departments.all() for teacher in self.teachers.all()):
             raise ValidationError("A teacher is not related to the department.")
 
         # student groups check
-        if not all(self.department in student_group.department for student_group in self.student_groups.all()):
+        if not all(self.department in student_group.department.all() for student_group in self.student_groups.all()):
             raise ValidationError("A student group is not related to the department.")
 
     # permissions
@@ -356,7 +372,7 @@ class TeachingUnit(models.Model, ModelPermissionHelper):
 
         return {
             # a user can only interact with a related departments
-            "department": lambda data: user.managing_departments | user.teaching_departments
+            "department": lambda data: (user.managing_departments | user.teaching_departments).all()
         }
 
     @classmethod
@@ -406,7 +422,11 @@ class StudentCard(models.Model, ModelPermissionHelper):
     owner: User = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name="student_cards")
 
     def __repr__(self):
-        return f"<{self.__class__.__name__} id={str(self.id)[:8]} owner={self.owner.username!r}>"
+        return f"<{self.__class__.__name__} id={self.short_id} owner={self.owner.username!r}>"
+
+    @property
+    def short_id(self) -> str:
+        return str(self.id)[:8]
 
     # validations
 
@@ -414,7 +434,7 @@ class StudentCard(models.Model, ModelPermissionHelper):
         super().clean()
 
         # owner check
-        if self.department not in self.owner.studying_departments:
+        if self.department not in self.owner.studying_departments.all():
             raise ValidationError("The student is not related to the department.")
 
     # permissions
@@ -436,7 +456,7 @@ class StudentCard(models.Model, ModelPermissionHelper):
 
         return {
             # a user can only interact with a related departments
-            "department": lambda field, data: field in user.managing_departments,
+            "department": lambda field, data: field in user.managing_departments.all(),
         }
 
     @classmethod
@@ -488,10 +508,14 @@ class TeachingSession(models.Model, ModelPermissionHelper):
     teacher = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name="teaching_sessions")
 
     def __repr__(self):
-        return f"<{self.__class__.__name__} id={str(self.id)[:8]} unit={self.unit.name!r} start={self.start}>"
+        return f"<{self.__class__.__name__} id={self.short_id} unit={self.unit.name!r} start={self.start}>"
 
     def __str__(self):
         return f"{self.unit.name} ({self.start})"
+
+    @property
+    def short_id(self) -> str:
+        return str(self.id)[:8]
 
     @property
     def end(self) -> datetime:
@@ -502,12 +526,12 @@ class TeachingSession(models.Model, ModelPermissionHelper):
     def clean(self):
         super().clean()
 
-        # group check
-        if self.unit.department not in self.group.department:
+        # department check
+        if self.unit.department != self.group.department:
             raise ValidationError("The group is not related to the unit department.")
 
         # teacher check
-        if self.unit not in self.teacher.teaching_units:
+        if self.unit not in self.teacher.teaching_units.all():
             raise ValidationError("The teacher is not related to the unit.")
 
     # permissions
@@ -545,7 +569,7 @@ class TeachingSession(models.Model, ModelPermissionHelper):
                 user.teaching_units |
                 # all the units of the department the user is managing
                 TeachingUnit.objects.filter(pk__in=user.managing_departments.values("teaching_units"))
-            )
+            ).all()
         }
 
     @classmethod
@@ -609,11 +633,15 @@ class Attendance(models.Model, ModelPermissionHelper):
     def __repr__(self):
         return (
             f"<{self.__class__.__name__} "
-            f"id={str(self.id)[:8]} "
+            f"id={self.short_id} "
             f"student={self.student.username} "
-            f"session={str(self.session.id)[:8]}"
+            f"session={self.session.short_id}"
             f">"
         )
+
+    @property
+    def short_id(self) -> str:
+        return str(self.id)[:8]
 
     # validations
 
@@ -621,7 +649,7 @@ class Attendance(models.Model, ModelPermissionHelper):
         super().clean()
 
         # student check
-        if self.student not in self.session.group.students:
+        if self.student not in self.session.group.students.all():
             raise ValidationError("The student is not related to the student group.")
 
     # permissions
@@ -662,7 +690,7 @@ class Attendance(models.Model, ModelPermissionHelper):
                         pk__in=user.managing_departments.values("teaching_units")
                     ).values("sessions")
                 )
-            )
+            ).all()
         }
 
     @classmethod
@@ -721,7 +749,7 @@ class Absence(models.Model, ModelPermissionHelper):
     def __repr__(self):
         return (
             f"<{self.__class__.__name__} "
-            f"id={str(self.id)[:8]} "
+            f"id={self.short_id} "
             f"department={self.department} "
             f"student={self.student.username} "
             f"start={self.start} "
@@ -730,7 +758,11 @@ class Absence(models.Model, ModelPermissionHelper):
         )
 
     def __str__(self):
-        return f"[{str(self.id)[:8]}] {self.student}"
+        return f"[{self.short_id}] {self.student}"
+
+    @property
+    def short_id(self) -> str:
+        return str(self.id)[:8]
 
     # validations
 
@@ -738,7 +770,7 @@ class Absence(models.Model, ModelPermissionHelper):
         super().clean()
 
         # student check
-        if self.department not in self.student.studying_departments:
+        if self.department not in self.student.studying_departments.all():
             raise ValidationError("The student is not related to the department.")
 
     # properties
@@ -775,7 +807,7 @@ class Absence(models.Model, ModelPermissionHelper):
 
         return {
             # all the departments the user is studying in
-            "department": lambda data: user.studying_departments,
+            "department": lambda data: user.studying_departments.all(),
         }
 
     @classmethod
@@ -831,7 +863,11 @@ class AbsenceAttachment(models.Model, ModelPermissionHelper):
     absence = models.ForeignKey(to=Absence, on_delete=models.CASCADE, related_name="attachments")
 
     def __repr__(self):
-        return f"<{self.__class__.__name__} id={str(self.id)[:8]} content={self.content!r}>"
+        return f"<{self.__class__.__name__} id={self.short_id} content={self.content!r}>"
+
+    @property
+    def short_id(self) -> str:
+        return str(self.id)[:8]
 
     # permissions
 
@@ -853,7 +889,7 @@ class AbsenceAttachment(models.Model, ModelPermissionHelper):
 
         return {
             # all the departments the user is studying in
-            "absence": lambda data: user.absences,
+            "absence": lambda data: user.absences.all(),
         }
 
     @classmethod

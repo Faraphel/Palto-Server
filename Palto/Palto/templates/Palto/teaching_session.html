@@ -1,27 +1,66 @@
 {% extends "Palto/base.html" %}
+{% load dict_tags %}
 
 {% block body %}
-    {# table of all the sessions #}
+    {# session's information #}
+    <table>
+        <tr>
+            <th>Identifiant</th>
+            <td>{{ session.id }}</td>
+        </tr>
+        <tr>
+            <th>Début</th>
+            <td>{{ session.start }}</td>
+        </tr>
+        <tr>
+            <th>Durée</th>
+            <td>{{ session.duration }}</td>
+        </tr>
+        <tr>
+            <th>Unité d'Enseignement</th>
+            <td>{{ session.unit }}</td>
+        </tr>
+        <tr>
+            <th>Enseignant</th>
+            <td><a href="{% url "Palto:profile" session.teacher.id %}">{{ session.teacher }}</a></td>
+        </tr>
+        <tr>
+            <th>Groupe</th>
+            <td>{{ session.group }}</td>
+        </tr>
+    </table>
+
+    {# session's students information #}
     <table>
         <thead>
             <tr>
-                <th>Identifiant</th>
-                <th>Début</th>
-                <th>Durée</th>
-                <th>Unité d'Enseignement</th>
-                <th>Enseignant</th>
-                <th>Groupe</th>
+                <th>Elève</th>
+                <th>Présence</th>
+                <th>Absence</th>
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td>{{ session.id }}</td>
-                <td>{{ session.start }}</td>
-                <td>{{ session.duration }}</td>
-                <td>{{ session.unit }}</td>
-                <td>{{ session.teacher }}</td>
-                <td>{{ session.group }}</td>
-            </tr>
+            {% for student, session_student_data in session_students_data.items %}
+                <tr>
+                    <td><a href="{% url "Palto:profile" student.id %}">{{ student }}</a></td>
+                    <td>
+                        {% with attendance=session_student_data|dict_get:"attendance" %}
+                            {% if attendance != None %}
+                                {{ attendance.date }}
+                            {% endif %}
+                        {% endwith %}
+                    </td>
+                    <td>
+                        {% with absence=session_student_data|dict_get:"attendance" %}
+                            {% if absence != None %}
+                                <a href="{# TODO(Raphaël): when absence page added #}">...</a>
+                            {% endif %}
+                        {% endwith %}
+                    </td>
+                </tr>
+            {% endfor %}
         </tbody>
     </table>
+
+    {# TODO(Raphaël): export boutton #}
 {% endblock %}
