@@ -17,7 +17,7 @@
             {% for session in sessions %}
                 <tr>
                     <td><a href="{% url "Palto:teaching_session" session.id %}">{{ session.short_id }}</a></td>
-                    <td><a href="{# TODO(Faraphel): add when teaching units #}">{{ session.unit.name }}</a></td>
+                    <td><a href="{% url "Palto:teaching_unit" session.unit.id %}">{{ session.unit.name }}</a></td>
                     <td>{{ session.start }}<br>{{ session.end }}</td>
                     <td><a href="{% url "Palto:profile" session.teacher.id %}">{{ session.teacher }}</a></td>
                     <td>{{ session.attendances.all|length }} / {{ session.group.students.all|length }}</td>

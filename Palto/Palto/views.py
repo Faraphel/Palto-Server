@@ -71,6 +71,10 @@ def profile_view(request: WSGIRequest, profile_id: uuid.UUID = None):
     # get the corresponding user from its id.
     profile = get_object_or_404(models.User, id=profile_id)
 
+    # check if the user is allowed to see this specific object
+    if profile not in models.User.all_visible_by_user(request.user):
+        return HttpResponseForbidden()
+
     # prepare the data and the "complex" query for the template
     profile_departments_data = {
         department: {
@@ -116,9 +120,29 @@ def teaching_session_list_view(request: WSGIRequest):
 
 
 @login_required
+def teaching_unit_view(request: WSGIRequest, unit_id: uuid.UUID):
+    unit = get_object_or_404(models.TeachingUnit, id=unit_id)
+
+    # check if the user is allowed to see this specific object
+    if unit not in models.TeachingUnit.all_visible_by_user(request.user):
+        # TODO: syntaxic sugar session.visible_by_user(request.user)
+        return HttpResponseForbidden()
+
+    # render the page
+    return render(
+        request,
+        "Palto/teaching_unit.html",
+        context=dict(
+            unit=unit,
+        )
+    )
+
+
+@login_required
 def teaching_session_view(request: WSGIRequest, session_id: uuid.UUID):
     session = get_object_or_404(models.TeachingSession, id=session_id)
 
+    # check if the user is allowed to see this specific object
     if session not in models.TeachingSession.all_visible_by_user(request.user):
         # TODO: syntaxic sugar session.visible_by_user(request.user)
         return HttpResponseForbidden()
@@ -134,8 +158,8 @@ def teaching_session_view(request: WSGIRequest, session_id: uuid.UUID):
             "absence": get_object_or_none(
                 models.Absence.objects,
                 student=student,
-                start__gte=session.start, end__lte=session.end
-            ),
+                start__lte=session.start, end__gte=session.end
+            ),  # TODO: property ?
         }
 
         for student in session.group.students.all()
@@ -148,5 +172,24 @@ def teaching_session_view(request: WSGIRequest, session_id: uuid.UUID):
         context=dict(
             session=session,
             session_students_data=session_students_data,
+        )
+    )
+
+
+@login_required
+def absence_view(request: WSGIRequest, absence_id: uuid.UUID):
+    absence = get_object_or_404(models.Absence, id=absence_id)
+
+    # check if the user is allowed to see this specific object
+    if absence not in models.Absence.all_visible_by_user(request.user):
+        # TODO: syntaxic sugar session.visible_by_user(request.user)
+        return HttpResponseForbidden()
+
+    # render the page
+    return render(
+        request,
+        "Palto/absence.html",
+        context=dict(
+            absence=absence,
         )
     )

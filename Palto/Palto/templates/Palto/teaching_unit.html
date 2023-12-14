@@ -1,0 +1,60 @@
+{% extends "Palto/base.html" %}
+{% load dict_tags %}
+
+{% block body %}
+    {# unit's information #}
+    <table>
+        <tr>
+            <th>Identifiant</th>
+            <td>{{ unit.id }}</td>
+        </tr>
+        <tr>
+            <th>Nom</th>
+            <td>{{ unit.name }}</td>
+        </tr>
+        <tr>
+            <th>Département</th>
+            <td href="{# TODO: department url #}">{{ unit.department.name }}</td>
+        </tr>
+        <tr>
+            <th>Mail</th>
+            <td>{% if unit.email != None %}{{ unit.email }}{% else %} / {% endif %}</td>
+        </tr>
+        <tr>
+            <th>Sessions</th>
+            <td>{{ unit.sessions.all|length }}</td>
+        </tr>
+    </table>
+
+    {# unit's managers #}
+    <table>
+        <thead>
+            <tr>
+                <th>Responsables</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for manager in unit.managers.all %}
+                <tr>
+                    <td><a href="{% url "Palto:profile" manager.id %}">{{ manager }}</a></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {# unit's teachers #}
+    <table>
+        <thead>
+            <tr>
+                <th>Enseignants</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for teacher in unit.teachers.all %}
+                <tr>
+                    <td><a href="{% url "Palto:profile" teacher.id %}">{{ teacher }}</a></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

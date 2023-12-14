@@ -1,0 +1,35 @@
+{% extends "Palto/base.html" %}
+
+{% block body %}
+    {# absence's information #}
+    <table>
+        <tr>
+            <th>Identifiant</th>
+            <td>{{ absence.id }}</td>
+        </tr>
+        <tr>
+            <th>Département</th>
+            <td>{{ absence.department }}</td>
+        </tr>
+        <tr>
+            <th>Etudiant</th>
+            <td>{{ absence.student }}</td>
+        </tr>
+        <tr>
+            <th>Période</th>
+            <td>{{ absence.start }}<br>{{ absence.end }}</td>
+        </tr>
+    </table>
+
+    {# absence's message #}
+    <p>
+        {{ absence.message }}
+    </p>
+
+    {# absence's attachments #}
+    <div>
+        {% for attachment in absence.attachments.all %}
+            <a href="{{ attachment.content.url }}">{{ attachment.content.name }}</a>
+        {% endfor %}
+    </div>
+{% endblock %}
