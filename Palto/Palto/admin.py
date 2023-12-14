@@ -34,8 +34,8 @@ class AdminStudentGroup(admin.ModelAdmin):
 
 @admin.register(models.TeachingUnit)
 class AdminTeachingUnit(admin.ModelAdmin):
-    list_display = ("id", "name")
-    search_fields = ("id", "name")
+    list_display = ("id", "name", "email")
+    search_fields = ("id", "name", "email")
 
 
 @admin.register(models.StudentCard)

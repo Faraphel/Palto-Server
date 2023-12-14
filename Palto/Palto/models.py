@@ -318,6 +318,7 @@ class TeachingUnit(models.Model, ModelPermissionHelper):
 
     id: uuid.UUID = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False, max_length=36)
     name: str = models.CharField(max_length=64)
+    email: str = models.EmailField(null=True, blank=True)
 
     department = models.ForeignKey(to=Department, on_delete=models.CASCADE, related_name="teaching_units")
 
