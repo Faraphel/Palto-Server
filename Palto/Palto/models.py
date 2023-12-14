@@ -15,7 +15,7 @@ from django.db import models
 from django.db.models import QuerySet, Q, F
 
 
-# TODO(Raphaël): split permissions from models for readability
+# TODO(Faraphel): split permissions from models for readability
 
 
 class ModelPermissionHelper:

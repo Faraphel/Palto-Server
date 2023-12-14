@@ -4,8 +4,8 @@
     <form method="POST">
         {% csrf_token %}
         <table>
-            {{ form_login.as_table }}
+            {{ form_new_absence.as_table }}
         </table>
-        <input type="submit" value="Se connecter">
+        <input type="submit" value="Créer">
     </form>
 {% endblock %}

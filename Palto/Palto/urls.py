@@ -20,13 +20,13 @@ urlpatterns = [
     path("profile/<uuid:profile_id>/", views.profile_view, name="profile"),
 
     # Units
-    path("teaching_units/<uuid:unit_id>/", views.teaching_unit_view, name="teaching_unit"),
+    path("teaching_units/view/<uuid:unit_id>/", views.teaching_unit_view, name="teaching_unit_view"),
 
     # Sessions
     path("teaching_sessions/", views.teaching_session_list_view, name="teaching_session_list"),
-    path("teaching_sessions/<uuid:session_id>/", views.teaching_session_view, name="teaching_session"),
+    path("teaching_sessions/view/<uuid:session_id>/", views.teaching_session_view, name="teaching_session_view"),
 
     # Absences
-    path("absences/<uuid:absence_id>/", views.absence_view, name="absence"),
-    # TODO: new absence
+    path("absences/view/<uuid:absence_id>/", views.absence_view, name="absence_view"),
+    path("absences/new/", views.new_absence_view, name="absence_new"),
 ]

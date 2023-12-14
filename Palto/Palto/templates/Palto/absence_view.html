@@ -9,11 +9,11 @@
         </tr>
         <tr>
             <th>Département</th>
-            <td>{{ absence.department }}</td>
+            <td><a href="{# TODO(Faraphel): departement #}">{{ absence.department }}</a></td>
         </tr>
         <tr>
-            <th>Etudiant</th>
-            <td>{{ absence.student }}</td>
+            <th>Étudiant</th>
+            <td><a href="{% url "Palto:profile" absence.student.id %}">{{ absence.student }}</a></td>
         </tr>
         <tr>
             <th>Période</th>

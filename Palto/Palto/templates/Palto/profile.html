@@ -29,7 +29,7 @@
                                 <td>Responsable d'UE</td>
                                 <td>
                                     {% for managing_unit in managing_units %}
-                                        <a href="{% url "Palto:teaching_unit" managing_unit.id %}">
+                                        <a href="{% url "Palto:teaching_unit_view" managing_unit.id %}">
                                             {{ managing_unit.name }}
                                         </a>
                                         {% if not forloop.last %}<br/>{% endif %}
@@ -45,7 +45,7 @@
                                 <td>Enseignant</td>
                                 <td>
                                     {% for teaching_unit in teaching_units %}
-                                        <a href="{% url "Palto:teaching_unit" teaching_unit.id %}">
+                                        <a href="{% url "Palto:teaching_unit_view" teaching_unit.id %}">
                                             {{ teaching_unit.name }}
                                         </a>
                                         {% if not forloop.last %}<br/>{% endif %}

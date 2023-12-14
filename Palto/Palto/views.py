@@ -8,11 +8,11 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.core.handlers.wsgi import WSGIRequest
 from django.core.paginator import Paginator
+from django.db import IntegrityError
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, get_object_or_404, redirect
 
-from Palto.Palto import models
-from Palto.Palto.forms import LoginForm
+from Palto.Palto import models, forms
 from Palto.Palto.utils import get_object_or_none
 
 ELEMENT_PER_PAGE: int = 30
@@ -25,7 +25,7 @@ def homepage_view(request: WSGIRequest):
 
 def login_view(request: WSGIRequest):
     # create a login form
-    form_login = LoginForm(request.POST)
+    form_login = forms.LoginForm(request.POST)
 
     if form_login.is_valid():
         # try to authenticate this user with the credentials
@@ -125,13 +125,13 @@ def teaching_unit_view(request: WSGIRequest, unit_id: uuid.UUID):
 
     # check if the user is allowed to see this specific object
     if unit not in models.TeachingUnit.all_visible_by_user(request.user):
-        # TODO: syntaxic sugar session.visible_by_user(request.user)
+        # TODO(Faraphel): syntaxic sugar session.visible_by_user(request.user)
         return HttpResponseForbidden()
 
     # render the page
     return render(
         request,
-        "Palto/teaching_unit.html",
+        "Palto/teaching_unit_view.html",
         context=dict(
             unit=unit,
         )
@@ -144,7 +144,7 @@ def teaching_session_view(request: WSGIRequest, session_id: uuid.UUID):
 
     # check if the user is allowed to see this specific object
     if session not in models.TeachingSession.all_visible_by_user(request.user):
-        # TODO: syntaxic sugar session.visible_by_user(request.user)
+        # TODO(Faraphel): syntaxic sugar session.visible_by_user(request.user)
         return HttpResponseForbidden()
 
     # prepare the data and the "complex" query for the template
@@ -159,7 +159,7 @@ def teaching_session_view(request: WSGIRequest, session_id: uuid.UUID):
                 models.Absence.objects,
                 student=student,
                 start__lte=session.start, end__gte=session.end
-            ),  # TODO: property ?
+            ),  # TODO(Faraphel): property ?
         }
 
         for student in session.group.students.all()
@@ -168,7 +168,7 @@ def teaching_session_view(request: WSGIRequest, session_id: uuid.UUID):
     # render the page
     return render(
         request,
-        "Palto/teaching_session.html",
+        "Palto/teaching_session_view.html",
         context=dict(
             session=session,
             session_students_data=session_students_data,
@@ -182,14 +182,50 @@ def absence_view(request: WSGIRequest, absence_id: uuid.UUID):
 
     # check if the user is allowed to see this specific object
     if absence not in models.Absence.all_visible_by_user(request.user):
-        # TODO: syntaxic sugar session.visible_by_user(request.user)
+        # TODO(Faraphel): syntaxic sugar session.visible_by_user(request.user)
         return HttpResponseForbidden()
 
     # render the page
     return render(
         request,
-        "Palto/absence.html",
+        "Palto/absence_view.html",
         context=dict(
             absence=absence,
+        )
+    )
+
+
+@login_required
+def new_absence_view(request: WSGIRequest):
+    # check if the user can create an absence
+    if not models.Absence.can_user_create(request.user):
+        return HttpResponseForbidden()
+
+    # create a form for the new absence
+    form_new_absence = forms.NewAbsenceForm(request.user, request.POST)
+
+    if form_new_absence.is_valid():
+        try:
+            models.Absence.objects.create(
+                student=request.user,
+                start=form_new_absence.cleaned_data["start"],
+                end=form_new_absence.cleaned_data["end"],
+                department=form_new_absence.cleaned_data["department"],
+                message=form_new_absence.cleaned_data["message"],
+            )
+        except IntegrityError:
+            form_new_absence.add_error(None, "This absence already exists.")
+
+        else:
+            return redirect("Palto:homepage")  # TODO(Faraphel): redirect to absence list
+
+    # TODO(Faraphel): add attachments to the forms
+
+    # render the page
+    return render(
+        request,
+        "Palto/absence_new.html",
+        context=dict(
+            form_new_absence=form_new_absence,
         )
     )

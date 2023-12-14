@@ -18,7 +18,7 @@
         </tr>
         <tr>
             <th>Unité d'Enseignement</th>
-            <td><a href="{% url "Palto:teaching_unit" session.unit.id %}">{{ session.unit }}</a></td>
+            <td><a href="{% url "Palto:teaching_unit_view" session.unit.id %}">{{ session.unit }}</a></td>
         </tr>
         <tr>
             <th>Enseignant</th>
@@ -53,7 +53,7 @@
                     <td>
                         {% with absence=session_student_data|dict_get:"absence" %}
                             {% if absence != None %}
-                                <a href="{% url "Palto:absence" absence.id %}">Détails</a>
+                                <a href="{% url "Palto:absence_view" absence.id %}">Détails</a>
                             {% endif %}
                         {% endwith %}
                     </td>

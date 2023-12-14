@@ -9,7 +9,7 @@ from django.contrib import admin
 from . import models
 
 
-# TODO: plus de list_filter sur "department" ?
+# TODO(Faraphel): plus de list_filter sur "department" ?
 
 
 # Register your models here.
