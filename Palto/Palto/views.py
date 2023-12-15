@@ -202,24 +202,31 @@ def new_absence_view(request: WSGIRequest):
         return HttpResponseForbidden()
 
     # create a form for the new absence
-    form_new_absence = forms.NewAbsenceForm(request.user, request.POST)
+    form_new_absence = forms.NewAbsenceForm(request.user, request.POST, request.FILES)
 
     if form_new_absence.is_valid():
-        try:
-            models.Absence.objects.create(
-                student=request.user,
-                start=form_new_absence.cleaned_data["start"],
-                end=form_new_absence.cleaned_data["end"],
-                department=form_new_absence.cleaned_data["department"],
-                message=form_new_absence.cleaned_data["message"],
-            )
-        except IntegrityError:
+        print(form_new_absence.files, form_new_absence.cleaned_data)
+
+        absence, is_created = models.Absence.objects.get_or_create(
+            student=request.user,
+            start=form_new_absence.cleaned_data["start"],
+            end=form_new_absence.cleaned_data["end"],
+            department=form_new_absence.cleaned_data["department"],
+            message=form_new_absence.cleaned_data["message"],
+        )
+
+        if not is_created:
+            # if the absence already existed, show an error
             form_new_absence.add_error(None, "This absence already exists.")
 
         else:
-            return redirect("Palto:homepage")  # TODO(Faraphel): redirect to absence list
+            # add the attachments files to the absence
+            for file in form_new_absence.cleaned_data["attachments"]:
+                absence.attachments.create(
+                    content=file
+                )
 
-    # TODO(Faraphel): add attachments to the forms
+            return redirect("Palto:homepage")  # TODO(Faraphel): redirect to absence list
 
     # render the page
     return render(

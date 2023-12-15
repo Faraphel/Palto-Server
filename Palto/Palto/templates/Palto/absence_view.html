@@ -29,7 +29,7 @@
     {# absence's attachments #}
     <div>
         {% for attachment in absence.attachments.all %}
-            <a href="{{ attachment.content.url }}">{{ attachment.content.name }}</a>
+            <a href="{{ attachment.content.url }}" target="_blank">{{ attachment.content.name }}</a>
         {% endfor %}
     </div>
 {% endblock %}
