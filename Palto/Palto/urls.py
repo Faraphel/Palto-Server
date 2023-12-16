@@ -19,6 +19,12 @@ urlpatterns = [
     path("profile/", views.profile_view, name="my_profile"),
     path("profile/<uuid:profile_id>/", views.profile_view, name="profile"),
 
+    # Student groups
+    path("student_groups/view/<uuid:group_id>/", views.student_group_view, name="student_group_view"),
+
+    # Departments
+    path("departments/view/<uuid:department_id>/", views.department_view, name="department_view"),
+
     # Units
     path("teaching_units/view/<uuid:unit_id>/", views.teaching_unit_view, name="teaching_unit_view"),
 
@@ -27,6 +33,7 @@ urlpatterns = [
     path("teaching_sessions/view/<uuid:session_id>/", views.teaching_session_view, name="teaching_session_view"),
 
     # Absences
+    path("absences/", views.absence_list_view, name="absence_list"),
     path("absences/view/<uuid:absence_id>/", views.absence_view, name="absence_view"),
     path("absences/new/", views.new_absence_view, name="absence_new"),
 ]

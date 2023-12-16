@@ -26,7 +26,7 @@
         </tr>
         <tr>
             <th>Groupe</th>
-            <td>{{ session.group }}</td>
+            <td><a href="{% url "Palto:student_group_view" session.group.id %}">{{ session.group }}</a></td>
         </tr>
     </table>
 

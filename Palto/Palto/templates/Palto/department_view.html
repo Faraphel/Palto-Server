@@ -1,32 +1,25 @@
 {% extends "Palto/base.html" %}
 {% load dict_tags %}
 
+
 {% block body %}
-    {# unit's information #}
+    {# department's information #}
     <table>
         <tr>
             <th>Identifiant</th>
-            <td>{{ unit.id }}</td>
+            <td>{{ department.id }}</td>
         </tr>
         <tr>
             <th>Nom</th>
-            <td>{{ unit.name }}</td>
-        </tr>
-        <tr>
-            <th>Département</th>
-            <td href="{% url "Palto:department_view" unit.department.id %}">{{ unit.department.name }}</td>
+            <td>{{ department.name }}</td>
         </tr>
         <tr>
             <th>Mail</th>
-            <td>{% if unit.email != None %}{{ unit.email }}{% else %} / {% endif %}</td>
-        </tr>
-        <tr>
-            <th>Sessions</th>
-            <td>{{ unit.sessions.all|length }}</td>
+            <td>{% if department.email != None %}{{ department.email }}{% else %} / {% endif %}</td>
         </tr>
     </table>
 
-    {# unit's managers #}
+    {# department's managers #}
     <table>
         <thead>
             <tr>
@@ -34,7 +27,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for manager in unit.managers.all %}
+            {% for manager in department.managers.all %}
                 <tr>
                     <td><a href="{% url "Palto:profile" manager.id %}">{{ manager }}</a></td>
                 </tr>
@@ -42,7 +35,7 @@
         </tbody>
     </table>
 
-    {# unit's teachers #}
+    {# department's teachers #}
     <table>
         <thead>
             <tr>
@@ -50,7 +43,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for teacher in unit.teachers.all %}
+            {% for teacher in department.teachers.all %}
                 <tr>
                     <td><a href="{% url "Palto:profile" teacher.id %}">{{ teacher }}</a></td>
                 </tr>

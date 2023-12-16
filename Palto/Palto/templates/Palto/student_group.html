@@ -1,0 +1,39 @@
+{% extends "Palto/base.html" %}
+
+{% block body %}
+    {# group's information #}
+    <table>
+        <tr>
+            <th>Identifiant</th>
+            <td>{{ group.id }}</td>
+        </tr>
+        <tr>
+            <th>Nom</th>
+            <td>{{ group.name }}</td>
+        </tr>
+        <tr>
+            <th>Département</th>
+            <td><a href="{% url "Palto:department_view" group.department.id %}">{{ group.department }}</a></td>
+        </tr>
+        <tr>
+            <th>Propriétaire</th>
+            <td><a href="{% url "Palto:profile" group.owner.id %}">{{ group.owner }}</a></td>
+        </tr>
+    </table>
+
+    {# group's students information #}
+    <table>
+        <thead>
+            <tr>
+                <th>Étudiants</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in group.students.all %}
+                <tr>
+                    <td><a href="{% url "Palto:profile" student.id %}">{{ student }}</a></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

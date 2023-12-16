@@ -11,7 +11,7 @@
         {% for department, profile_department_data in profile_departments_data.items %}
         <tr>
             {# department name #}
-            <th>{{ department.name }}</th>
+            <th><a href="{% url "Palto:department_view" department.id %}">{{ department.name }}</a></th>
             {# relation information #}
             <td>
                 <table>
@@ -61,7 +61,7 @@
                                 <td>Groupe Étudiant</td>
                                 <td>
                                     {% for student_group in student_groups %}
-                                        <a href="{# TODO(Faraphel): redirect to group #}">{{ student_group.name }}</a>
+                                        <a href="{% url "Palto:student_group_view" student_group.id %}">{{ student_group.name }}</a>
                                         {% if not forloop.last %}<br/>{% endif %}
                                     {% endfor %}
                                 </td>
