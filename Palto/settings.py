@@ -191,7 +191,7 @@ AUTH_USER_MODEL = "Palto.User"
 
 
 # CORS settings
-# TODO(Raphaël): Only in debug !
+# TODO(Faraphel): Only in debug !
 CORS_ORIGIN_ALLOW_ALL = True
 
 

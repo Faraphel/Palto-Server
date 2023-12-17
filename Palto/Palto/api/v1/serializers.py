@@ -12,7 +12,7 @@ from rest_framework.exceptions import PermissionDenied
 from Palto.Palto import models
 
 
-# TODO: voir les relations inversées ?
+# TODO(Faraphel): voir les relations inversées ?
 
 
 class ModelSerializerContrains(serializers.ModelSerializer):

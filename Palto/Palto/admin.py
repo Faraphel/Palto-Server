@@ -9,7 +9,7 @@ from django.contrib import admin
 from . import models
 
 
-# TODO: plus de list_filter sur "department" ?
+# TODO(Faraphel): plus de list_filter sur "department" ?
 
 
 # Register your models here.
@@ -34,8 +34,8 @@ class AdminStudentGroup(admin.ModelAdmin):
 
 @admin.register(models.TeachingUnit)
 class AdminTeachingUnit(admin.ModelAdmin):
-    list_display = ("id", "name")
-    search_fields = ("id", "name")
+    list_display = ("id", "name", "email")
+    search_fields = ("id", "name", "email")
 
 
 @admin.register(models.StudentCard)
@@ -61,9 +61,9 @@ class AdminAttendance(admin.ModelAdmin):
 
 @admin.register(models.Absence)
 class AdminAbsence(admin.ModelAdmin):
-    list_display = ("id", "message", "student", "department", "start", "end")
-    search_fields = ("id", "message", "student", "department", "start", "end")
-    list_filter = ("department", "start", "end")
+    list_display = ("id", "message", "student", "start", "end")
+    search_fields = ("id", "message", "student", "start", "end")
+    list_filter = ("start", "end")
 
 
 @admin.register(models.AbsenceAttachment)

@@ -90,10 +90,8 @@ class FakeTeachingUnitFactory(factory.django.DjangoModelFactory):
         model = models.TeachingUnit
 
     name: str = factory.Faker("administrative_unit")
-
-    department: models.Department = factory.SubFactory(
-        FakeDepartmentFactory
-    )
+    email: str = factory.Faker("company_email")
+    department: models.Department = factory.SubFactory(FakeDepartmentFactory)
 
     @factory.post_generation
     def managers(self, create, extracted, **kwargs):

@@ -1,0 +1,41 @@
+{% extends "Palto/base.html" %}
+
+{% block body %}
+    {# table of all the sessions #}
+    <table>
+        <thead>
+            <tr>
+                <th>Identifiant</th>
+                <th>UE</th>
+                <th>Horaire</th>
+                <th>Enseignant</th>
+                <th>Effectif</th>
+            </tr>
+        </thead>
+        <tbody>
+            {# show the information for every session #}
+            {% for session in sessions %}
+                <tr>
+                    <td><a href="{% url "Palto:teaching_session_view" session.id %}">{{ session.short_id }}</a></td>
+                    <td><a href="{% url "Palto:teaching_unit_view" session.unit.id %}">{{ session.unit.name }}</a></td>
+                    <td>{{ session.start }}<br>{{ session.end }}</td>
+                    <td><a href="{% url "Palto:profile" session.teacher.id %}">{{ session.teacher }}</a></td>
+                    <td>{{ session.attendances.all|length }} / {{ session.group.students.all|length }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {# page navigator #}
+    <div>
+        {% if sessions.has_previous %}
+            <a href="?page={{ sessions.previous_page_number }}">Previous</a>
+        {% endif %}
+
+        <a>{{ sessions.number }}</a>
+
+        {% if sessions.has_next %}
+            <a href="?page={{ sessions.next_page_number }}">Next</a>
+        {% endif %}
+    </div>
+{% endblock %}

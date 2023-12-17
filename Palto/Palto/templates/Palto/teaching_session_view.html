@@ -1,0 +1,66 @@
+{% extends "Palto/base.html" %}
+{% load dict_tags %}
+
+{% block body %}
+    {# session's information #}
+    <table>
+        <tr>
+            <th>Identifiant</th>
+            <td>{{ session.id }}</td>
+        </tr>
+        <tr>
+            <th>Début</th>
+            <td>{{ session.start }}</td>
+        </tr>
+        <tr>
+            <th>Durée</th>
+            <td>{{ session.duration }}</td>
+        </tr>
+        <tr>
+            <th>Unité d'Enseignement</th>
+            <td><a href="{% url "Palto:teaching_unit_view" session.unit.id %}">{{ session.unit }}</a></td>
+        </tr>
+        <tr>
+            <th>Enseignant</th>
+            <td><a href="{% url "Palto:profile" session.teacher.id %}">{{ session.teacher }}</a></td>
+        </tr>
+        <tr>
+            <th>Groupe</th>
+            <td>{{ session.group }}</td>
+        </tr>
+    </table>
+
+    {# session's students information #}
+    <table>
+        <thead>
+            <tr>
+                <th>Elève</th>
+                <th>Présence</th>
+                <th>Absence</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student, session_student_data in session_students_data.items %}
+                <tr>
+                    <td><a href="{% url "Palto:profile" student.id %}">{{ student }}</a></td>
+                    <td>
+                        {% with attendance=session_student_data|dict_get:"attendance" %}
+                            {% if attendance != None %}
+                                {{ attendance.date }}
+                            {% endif %}
+                        {% endwith %}
+                    </td>
+                    <td>
+                        {% with absence=session_student_data|dict_get:"absence" %}
+                            {% if absence != None %}
+                                <a href="{% url "Palto:absence_view" absence.id %}">Détails</a>
+                            {% endif %}
+                        {% endwith %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {# TODO(Raphaël): export boutton #}
+{% endblock %}

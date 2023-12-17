@@ -1,0 +1,11 @@
+{% load static %}
+
+<nav>
+    <img src="{% static "Palto/favicon.svg" %}" alt="Palto's icon" width="5%">
+    <a>Palto</a>
+    
+    <a href="{% url "Palto:homepage" %}">Home</a>
+    <a href="{% url "Palto:my_profile" %}">Profile</a>
+    <a href="{% url "Palto:login" %}">Login</a>
+    <a href="{% url "Palto:logout" %}">Logout</a>
+</nav>
