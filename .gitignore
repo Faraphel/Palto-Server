@@ -1,5 +1,12 @@
+# IDE
 .idea
+
+# Virtual Environment
 venv
+.venv
+
+# Django
 media
 static-collected
 db.sqlite3
+.env

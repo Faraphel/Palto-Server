@@ -13,3 +13,4 @@ factory_boy
 
 # Other librairies
 markdown
+python-dotenv
