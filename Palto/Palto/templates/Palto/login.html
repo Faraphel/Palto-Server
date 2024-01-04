@@ -1,7 +1,15 @@
-{% extends "Palto/base.html" %}
+{% extends "Palto/base/base-features.html" %}
+{% load static %}
+
+{% block style %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static "Palto/css/login.css" %}" />
+{% endblock %}
 
 {% block body %}
-    <form method="POST">
+    {{ block.super }}
+
+    <form id="login-form" method="POST">
         {% csrf_token %}
         <table>
             {{ form_login.as_table }}

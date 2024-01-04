@@ -1,8 +1,10 @@
-{% extends "Palto/base.html" %}
+{% extends "Palto/base/base-features.html" %}
 {% load dict_tags %}
 
 
 {% block body %}
+    {{ block.super }}
+
     {# department's information #}
     <table>
         <tr>
