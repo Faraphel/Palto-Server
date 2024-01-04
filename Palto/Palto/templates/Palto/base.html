@@ -3,11 +3,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    {# base meta #}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" type="image/png" href="{% static 'Palto/favicon.svg' %}"/>
-
+    <link rel="stylesheet" href="{% static "Palto/css/base.css" %}" />
     <title>{% block title %}Palto{% endblock %}</title>
+
+    {# base style #}
+    <style>
+        {# font #}
+        @font-face {
+            font-family: "Century Gothic";
+            src: url("{% static 'Palto/font/CenturyGothic.ttf' %}");
+        }
+    </style>
+
 </head>
 <body>
     {# navigation #}

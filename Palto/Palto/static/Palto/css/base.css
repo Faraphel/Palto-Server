@@ -1,0 +1,15 @@
+/* tweaks */
+body {
+    margin: 0;
+}
+
+/* font */
+* {
+    font-family: "Century Gothic", sans-serif;
+}
+
+/* links */
+*:link, *:visited {
+    color: blue;  /* TODO: should be palette based color */
+    text-decoration: none;
+}

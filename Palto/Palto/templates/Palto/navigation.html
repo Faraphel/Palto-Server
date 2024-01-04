@@ -1,11 +1,17 @@
 {% load static %}
 
 <nav>
-    <img src="{% static "Palto/favicon.svg" %}" alt="Palto's icon" width="5%">
-    <a>Palto</a>
-    
-    <a href="{% url "Palto:homepage" %}">Home</a>
-    <a href="{% url "Palto:my_profile" %}">Profile</a>
-    <a href="{% url "Palto:login" %}">Login</a>
-    <a href="{% url "Palto:logout" %}">Logout</a>
+    <link rel="stylesheet" href="{% static "Palto/css/navigation.css" %}" />
+
+    <div id="navigation-header">
+        <img id="navigation-icon" src="{% static "Palto/favicon.svg" %}" alt="Palto's icon" />
+        <a id="navigation-title">Palto</a>
+    </div>
+
+    <div id="navigation-buttons">
+        <a href="{% url "Palto:homepage" %}">Home</a>
+        <a href="{% url "Palto:my_profile" %}">Profile</a>
+        <a href="{% url "Palto:login" %}">Login</a>
+        <a href="{% url "Palto:logout" %}">Logout</a>
+    </div>
 </nav>

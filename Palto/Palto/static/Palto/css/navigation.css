@@ -1,0 +1,28 @@
+nav {
+    display: flex;
+    align-items: center;
+    margin: 4px 16px;
+}
+
+#navigation-header {
+    display: flex;
+    margin-right: auto;
+    align-items: center;
+    gap: 10px;
+}
+
+#navigation-title {
+    font-size: 150%;
+}
+
+#navigation-icon {
+    width: 20%;
+}
+
+#navigation-buttons {
+    display: flex;
+    margin-left: auto;
+    align-items: center;
+    gap: 10px;
+}
+
