@@ -24,24 +24,28 @@ def homepage_view(request: WSGIRequest):
 
 def login_view(request: WSGIRequest):
     # create a login form
-    form_login = forms.LoginForm(request.POST)
 
-    if form_login.is_valid():
-        # try to authenticate this user with the credentials
-        user = authenticate(
-            username=form_login.cleaned_data["username"],
-            password=form_login.cleaned_data["password"]
-        )
+    if request.POST:
+        form_login = forms.LoginForm(request.POST)
 
-        if user is not None:
-            # if the user was authenticated, log the user in.
-            login(request, user)
-            # redirect him to the main page
-            return redirect("Palto:homepage")
+        if form_login.is_valid():
+            # try to authenticate this user with the credentials
+            user = authenticate(
+                username=form_login.cleaned_data["username"],
+                password=form_login.cleaned_data["password"]
+            )
 
-        else:
-            # otherwise the credentials were invalid.
-            form_login.add_error(field=None, error="Invalid credentials.")
+            if user is not None:
+                # if the user was authenticated, log the user in.
+                login(request, user)
+                # redirect him to the main page
+                return redirect("Palto:homepage")
+
+            else:
+                # otherwise the credentials were invalid.
+                form_login.add_error(field=None, error="Invalid credentials.")
+    else:
+        form_login = forms.LoginForm()
 
     # return the page
     return render(

@@ -1,7 +1,9 @@
-{% extends "Palto/base.html" %}
+{% extends "Palto/base/base-features.html" %}
 {% load dict_tags %}
 
 {% block body %}
+    {{ block.super }}
+
     {{ profile.username }}
     {{ profile.email }}
     {% if profile.is_superuser %}Administrator{% endif %}
