@@ -1,78 +1,94 @@
 {% extends "Palto/base/base-features.html" %}
+{% load static %}
 {% load dict_tags %}
+
+{% block style %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static "Palto/css/profile.css" %}" />
+{% endblock %}
 
 {% block body %}
     {{ block.super }}
 
-    {{ profile.username }}
-    {{ profile.email }}
-    {% if profile.is_superuser %}Administrator{% endif %}
+    {# user informations #}
+    <table id="user-informations">
+        <tbody>
+          <tr><td id="user-name">{{ profile.first_name|title }} {{ profile.last_name|upper }}</td></tr>
+          <tr><td id="user-username">{{ profile.username }}</td></tr>
+          <tr><td id="user-mail"><a href="mailto:{{ profile.email }}">{{ profile.email }}</a></td></tr>
+          <tr><td id="user-role">{% if profile.is_superuser %}Administrator{% endif %}</td></tr>
+        </tbody>
+    </table>
 
     {# user related departments table #}
-    <table>
-        {% for department, profile_department_data in profile_departments_data.items %}
-        <tr>
-            {# department name #}
-            <th><a href="{% url "Palto:department_view" department.id %}">{{ department.name }}</a></th>
-            {# relation information #}
-            <td>
-                <table>
-                    {# user managing the department #}
-                    {% if profile_department_data|dict_get:"is_manager" %}
-                    <tr>
-                        <td>Responsable de Département</td>
-                        <td>/</td>
-                    </tr>
-                    {% endif %}
-                    {# user managing units #}
-                    {% with managing_units=profile_department_data|dict_get:"managing_units" %}
-                        {% if managing_units|length > 0 %}
+    <table id="user-relations">
+        <tbody>
+            {% for department, profile_department_data in profile_departments_data.items %}
+            <tr>
+                {# department name #}
+                <th><a href="{% url "Palto:department_view" department.id %}">{{ department.name }}</a></th>
+                {# relation information #}
+                <td>
+                    <table class="user-relation">
+                        <tbody>
+                            {# user managing the department #}
+                            {% if profile_department_data|dict_get:"is_manager" %}
                             <tr>
-                                <td>Responsable d'UE</td>
-                                <td>
-                                    {% for managing_unit in managing_units %}
-                                        <a href="{% url "Palto:teaching_unit_view" managing_unit.id %}">
-                                            {{ managing_unit.name }}
-                                        </a>
-                                        {% if not forloop.last %}<br/>{% endif %}
-                                    {% endfor %}
-                                </td>
+                                <td>Responsable de Département</td>
+                                <td>/</td>
                             </tr>
-                        {% endif %}
-                    {% endwith %}
-                    {# user teaching units #}
-                    {% with teaching_units=profile_department_data|dict_get:"teaching_units" %}
-                        {% if teaching_units|length > 0 %}
-                            <tr>
-                                <td>Enseignant</td>
-                                <td>
-                                    {% for teaching_unit in teaching_units %}
-                                        <a href="{% url "Palto:teaching_unit_view" teaching_unit.id %}">
-                                            {{ teaching_unit.name }}
-                                        </a>
-                                        {% if not forloop.last %}<br/>{% endif %}
-                                    {% endfor %}
-                                </td>
-                            </tr>
-                        {% endif %}
-                    {% endwith %}
-                    {# user studying groups #}
-                    {% with student_groups=profile_department_data|dict_get:"student_groups" %}
-                        {% if student_groups|length > 0 %}
-                            <tr>
-                                <td>Groupe Étudiant</td>
-                                <td>
-                                    {% for student_group in student_groups %}
-                                        <a href="{% url "Palto:student_group_view" student_group.id %}">{{ student_group.name }}</a>
-                                        {% if not forloop.last %}<br/>{% endif %}
-                                    {% endfor %}
-                                </td>
-                            </tr>
-                        {% endif %}
-                    {% endwith %}
-                </table>
-            </td>
-        </tr>
-        {% endfor %}
+                            {% endif %}
+                            {# user managing units #}
+                            {% with managing_units=profile_department_data|dict_get:"managing_units" %}
+                                {% if managing_units|length > 0 %}
+                                    <tr>
+                                        <td>Responsable d'UE</td>
+                                        <td>
+                                            {% for managing_unit in managing_units %}
+                                                <a href="{% url "Palto:teaching_unit_view" managing_unit.id %}">
+                                                    {{ managing_unit.name }}
+                                                </a>
+                                                {% if not forloop.last %}<br/>{% endif %}
+                                            {% endfor %}
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            {% endwith %}
+                            {# user teaching units #}
+                            {% with teaching_units=profile_department_data|dict_get:"teaching_units" %}
+                                {% if teaching_units|length > 0 %}
+                                    <tr>
+                                        <td>Enseignant</td>
+                                        <td>
+                                            {% for teaching_unit in teaching_units %}
+                                                <a href="{% url "Palto:teaching_unit_view" teaching_unit.id %}">
+                                                    {{ teaching_unit.name }}
+                                                </a>
+                                                {% if not forloop.last %}<br/>{% endif %}
+                                            {% endfor %}
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            {% endwith %}
+                            {# user studying groups #}
+                            {% with student_groups=profile_department_data|dict_get:"student_groups" %}
+                                {% if student_groups|length > 0 %}
+                                    <tr>
+                                        <td>Groupe Étudiant</td>
+                                        <td>
+                                            {% for student_group in student_groups %}
+                                                <a href="{% url "Palto:student_group_view" student_group.id %}">{{ student_group.name }}</a>
+                                                {% if not forloop.last %}<br/>{% endif %}
+                                            {% endfor %}
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            {% endwith %}
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
     </table>
 {% endblock %}
