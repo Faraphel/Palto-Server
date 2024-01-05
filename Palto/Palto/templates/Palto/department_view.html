@@ -1,12 +1,17 @@
 {% extends "Palto/base/base-features.html" %}
 {% load dict_tags %}
+{% load static %}
 
+{% block style %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static "Palto/css/department_view.css" %}" />
+{% endblock %}
 
 {% block body %}
     {{ block.super }}
 
     {# department's information #}
-    <table>
+    <table id="department-informations">
         <tr>
             <th>Identifiant</th>
             <td>{{ department.id }}</td>
@@ -17,39 +22,49 @@
         </tr>
         <tr>
             <th>Mail</th>
-            <td>{% if department.email != None %}{{ department.email }}{% else %} / {% endif %}</td>
+            <td><a href="mailto:{{ department.email }}">{{ department.email }}</a></td>
+        </tr>
+        <tr>
+            <th>Enseignants</th>
+            <td>{{ department.teachers.count }}</td>
+        </tr>
+        <tr>
+            <th>Étudiants</th>
+            <td>{{ department.students.count }}</td>
         </tr>
     </table>
 
-    {# department's managers #}
-    <table>
-        <thead>
-            <tr>
-                <th>Responsables</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for manager in department.managers.all %}
+    <div id="department-relations">
+        {# department's managers #}
+        <table class="department-relation">
+            <thead>
                 <tr>
-                    <td><a href="{% url "Palto:profile" manager.id %}">{{ manager }}</a></td>
+                    <th>Responsables</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                {% for manager in department.managers.all %}
+                    <tr>
+                        <td><a href="{% url "Palto:profile" manager.id %}">{{ manager }}</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
 
-    {# department's teachers #}
-    <table>
-        <thead>
-            <tr>
-                <th>Enseignants</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for teacher in department.teachers.all %}
+        {# department's teachers #}
+        <table class="department-relation">
+            <thead>
                 <tr>
-                    <td><a href="{% url "Palto:profile" teacher.id %}">{{ teacher }}</a></td>
+                    <th>Enseignants</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                {% for teacher in department.teachers.all %}
+                    <tr>
+                        <td><a href="{% url "Palto:profile" teacher.id %}">{{ teacher }}</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 {% endblock %}
