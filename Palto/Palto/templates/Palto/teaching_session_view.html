@@ -1,6 +1,14 @@
 {% extends "Palto/base/base-features.html" %}
 {% load dict_tags %}
 
+{% block page-title %}
+    Session de {{ session.unit.name }}
+{% endblock %}
+
+{% block navigation-title %}
+    Session de {{ session.unit.name }}
+{% endblock %}
+
 {% block body %}
     {{ block.super }}
 

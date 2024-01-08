@@ -1,5 +1,13 @@
 {% extends "Palto/base/base-features.html" %}
 
+{% block page-title %}
+    Groupe Étudiant {{ group.name }}
+{% endblock %}
+
+{% block navigation-title %}
+    Groupe Étudiant {{ group.name }}
+{% endblock %}
+
 {% block body %}
     {{ block.super }}
 

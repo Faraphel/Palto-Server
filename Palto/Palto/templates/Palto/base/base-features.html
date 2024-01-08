@@ -12,7 +12,11 @@
     <nav>
         <div id="navigation-header">
             <img id="navigation-icon" src="{% static "Palto/favicon.svg" %}" alt="Palto's icon" />
-            <a id="navigation-title">Palto</a>
+            <a id="navigation-app-name">Palto</a>
+        </div>
+        <div id="navigation-title">
+            {% block navigation-title %}
+            {% endblock %}
         </div>
         <div id="navigation-buttons">
             <a href="{% url "Palto:homepage" %}">Home</a>

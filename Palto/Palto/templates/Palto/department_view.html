@@ -2,6 +2,14 @@
 {% load dict_tags %}
 {% load static %}
 
+{% block page-title %}
+    Départment {{ department.name }}
+{% endblock %}
+
+{% block navigation-title %}
+    Départment {{ department.name }}
+{% endblock %}
+
 {% block style %}
     {{ block.super }}
     <link rel="stylesheet" href="{% static "Palto/css/department_view.css" %}" />

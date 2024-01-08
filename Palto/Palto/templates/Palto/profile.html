@@ -2,6 +2,14 @@
 {% load static %}
 {% load dict_tags %}
 
+{% block page-title %}
+    Profil
+{% endblock %}
+
+{% block navigation-title %}
+    Profil de {{ profile.first_name|title }} {{ profile.last_name|upper }}
+{% endblock %}
+
 {% block style %}
     {{ block.super }}
     <link rel="stylesheet" href="{% static "Palto/css/profile.css" %}" />

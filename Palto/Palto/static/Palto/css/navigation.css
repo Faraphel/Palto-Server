@@ -11,12 +11,16 @@ nav {
     gap: 10px;
 }
 
-#navigation-title {
+#navigation-app-name {
     font-size: 150%;
 }
 
 #navigation-icon {
     width: 20%;
+}
+
+#navigation-title {
+    font-size: 300%;
 }
 
 #navigation-buttons {
