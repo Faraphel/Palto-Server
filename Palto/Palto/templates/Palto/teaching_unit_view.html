@@ -1,5 +1,6 @@
 {% extends "Palto/base/base-features.html" %}
 {% load dict_tags %}
+{% load static %}
 
 {% block page-title %}
     Unité d'Enseignement de {{ unit.name }}
@@ -9,11 +10,16 @@
     Unité d'Enseignement de {{ unit.name }}
 {% endblock %}
 
+{% block style %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static "Palto/css/table_view.css" %}" />
+{% endblock %}
+
 {% block body %}
     {{ block.super }}
 
     {# unit's information #}
-    <table>
+    <table id="table-informations">
         <tr>
             <th>Identifiant</th>
             <td>{{ unit.id }}</td>
@@ -24,7 +30,7 @@
         </tr>
         <tr>
             <th>Département</th>
-            <td href="{% url "Palto:department_view" unit.department.id %}">{{ unit.department.name }}</td>
+            <td><a href="{% url "Palto:department_view" unit.department.id %}">{{ unit.department.name }}</a></td>
         </tr>
         <tr>
             <th>Mail</th>
@@ -36,35 +42,37 @@
         </tr>
     </table>
 
-    {# unit's managers #}
-    <table>
-        <thead>
-            <tr>
-                <th>Responsables</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for manager in unit.managers.all %}
+    <div id="table-relations">
+        {# unit's managers #}
+        <table class="table-relation">
+            <thead>
                 <tr>
-                    <td><a href="{% url "Palto:profile" manager.id %}">{{ manager }}</a></td>
+                    <th>Responsables</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    {# unit's teachers #}
-    <table>
-        <thead>
-            <tr>
-                <th>Enseignants</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for teacher in unit.teachers.all %}
+            </thead>
+            <tbody>
+                {% for manager in unit.managers.all %}
+                    <tr>
+                        <td><a href="{% url "Palto:profile" manager.id %}">{{ manager }}</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    
+        {# unit's teachers #}
+        <table class="table-relation">
+            <thead>
                 <tr>
-                    <td><a href="{% url "Palto:profile" teacher.id %}">{{ teacher }}</a></td>
+                    <th>Enseignants</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                {% for teacher in unit.teachers.all %}
+                    <tr>
+                        <td><a href="{% url "Palto:profile" teacher.id %}">{{ teacher }}</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 {% endblock %}

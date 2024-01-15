@@ -1,15 +1,47 @@
-/* tweaks */
-body {
-    margin: 0;
-}
-
 /* font */
 * {
     font-family: "Century Gothic", sans-serif;
 }
 
+/* color-scheme */
+@media (prefers-color-scheme: light) {
+    :root {
+        --primary: #00345F;
+        --secondary: #EF800A;
+
+        --foreground: #1B1B1B;
+        --background: #FFFFFF;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --primary: #00549F;
+        --secondary: #EF800A;
+
+        --foreground: #FFFFFF;
+        --background: #1B1B1B;
+    }
+}
+
 /* links */
 *:link, *:visited {
-    color: blue;  /* TODO: should be palette based color */
+    color: var(--primary);
     text-decoration: none;
+}
+
+*:link:hover, *:visited:hover {
+    color: var(--secondary);
+}
+
+/* table */
+table, tr, th, td {
+    border-color: var(--foreground) !important;
+}
+
+/* tweaks */
+body {
+    margin: 0;
+    color: var(--foreground);
+    background-color: var(--background);
 }

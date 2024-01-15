@@ -1,39 +1,34 @@
-#department-informations {
+#table-informations {
     border-collapse: collapse;
     border: 2px solid black;
     margin: 5% auto;
 }
 
-#department-informations th {
+#table-informations th {
     text-align: right;
     border: 1px solid black;
     padding: 4px;
 }
 
-#department-informations td {
+#table-informations td {
     text-align: left;
     border: 1px solid black;
     padding: 4px;
 }
 
-#department-relations {
+#table-relations {
     display: flex;
     width: 60%;
     margin: auto;
 }
 
-.department-relation {
+.table-relation {
     border-collapse: collapse;
     border: 2px solid black;
     margin: 0 auto auto auto;
 }
 
-.department-relation th {
-    border: 2px solid black;
-    padding: 4px;
-}
-
-.department-relation td {
+.table-relation th, .table-relation td {
     border: 2px solid black;
     padding: 4px;
 }

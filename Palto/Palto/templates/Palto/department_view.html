@@ -12,14 +12,14 @@
 
 {% block style %}
     {{ block.super }}
-    <link rel="stylesheet" href="{% static "Palto/css/department_view.css" %}" />
+    <link rel="stylesheet" href="{% static "Palto/css/table_view.css" %}" />
 {% endblock %}
 
 {% block body %}
     {{ block.super }}
 
     {# department's information #}
-    <table id="department-informations">
+    <table id="table-informations">
         <tr>
             <th>Identifiant</th>
             <td>{{ department.id }}</td>
@@ -42,9 +42,9 @@
         </tr>
     </table>
 
-    <div id="department-relations">
+    <div id="table-relations">
         {# department's managers #}
-        <table class="department-relation">
+        <table class="table-relation">
             <thead>
                 <tr>
                     <th>Responsables</th>
@@ -60,7 +60,7 @@
         </table>
 
         {# department's teachers #}
-        <table class="department-relation">
+        <table class="table-relation">
             <thead>
                 <tr>
                     <th>Enseignants</th>

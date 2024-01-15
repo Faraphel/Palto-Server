@@ -543,7 +543,7 @@ class TeachingSession(models.Model, ModelPermissionHelper):
         """
 
         return Absence.objects.filter(
-            student__in=self.group.students,
+            student__in=self.group.students.all(),
             start__lte=self.start, end__gte=self.end
         ).distinct()
 
