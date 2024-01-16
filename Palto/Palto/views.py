@@ -218,7 +218,7 @@ def new_absence_view(request: WSGIRequest):
                     content=file
                 )
 
-            return redirect("Palto:homepage")  # TODO(Faraphel): redirect to absence list
+            return redirect("Palto:absence_list")
 
     # render the page
     return render(
