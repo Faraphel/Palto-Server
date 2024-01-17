@@ -10,8 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
+import warnings
 from datetime import timedelta
 from pathlib import Path
+
+from django.core.management.utils import get_random_secret_key
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,22 +24,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ["DJANGO_SECRET"]
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
+if not SECRET_KEY:
+    SECRET_KEY = get_random_secret_key()
+    warnings.warn('The Django secret key should be defined in the "DJANGO_SECRET_KEY" variable environment.')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "false").lower() in ["1", "true"]
 
-ALLOWED_HOSTS = [
-    "127.0.0.1",
-    "localhost",
-    "0.0.0.0",
-]
-
-INTERNAL_IPS = [
-    "127.0.0.1",
-    "localhost",
-    "0.0.0.0",
-]
+ALLOWED_HOSTS = os.getenv("", "localhost 0.0.0.0").split(" ")
+INTERNAL_IPS = ["localhost"]
 
 # Application definition
 
@@ -93,12 +90,30 @@ WSGI_APPLICATION = 'Palto.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
+_DATABASES = {
+    "sqlite": {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+        'NAME': BASE_DIR / os.getenv("DATABASE_SQLITE_FILENAME", "db.sqlite3"),
+    },
+    "mysql": {
+        'ENGINE': 'django.db.backends.mysql',
+        "NAME": os.getenv("MYSQL_POSTGRES_NAME"),
+        "USER": os.getenv("MYSQL_POSTGRES_USER"),
+        "PASSWORD": os.getenv("MYSQL_POSTGRES_PASSWORD"),
+        "HOST": os.getenv("MYSQL_POSTGRES_HOST", "localhost"),
+        "PORT": os.getenv("MYSQL_POSTGRES_PORT", "5432"),
+    },
+    "postgres": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": os.getenv("DATABASE_POSTGRES_NAME"),
+        "USER": os.getenv("DATABASE_POSTGRES_USER"),
+        "PASSWORD": os.getenv("DATABASE_POSTGRES_PASSWORD"),
+        "HOST": os.getenv("DATABASE_POSTGRES_HOST", "localhost"),
+        "PORT": os.getenv("DATABASE_POSTGRES_PORT", "5432"),
+    },
 }
+
+DATABASES = {"default": _DATABASES[os.getenv("DATABASE_ENGINE", "sqlite")]}
 
 
 # Password validation

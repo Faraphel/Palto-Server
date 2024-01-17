@@ -1,41 +1,43 @@
 {% extends "Palto/base/base-features.html" %}
 
 {% block page-title %}
-    Sessions
+    Absences
 {% endblock %}
 
 {% block navigation-title %}
-    Sessions
+    Absences
 {% endblock %}
 
 {% block body %}
     {{ block.super }}
-    {# table of all the sessions #}
+
+    {# table of all the absences #}
     <table>
         <thead>
             <tr>
                 <th>Identifiant</th>
-                <th>UE</th>
-                <th>Horaire</th>
-                <th>Enseignant</th>
-                <th>Effectif</th>
+                <th>Département</th>
+                <th>Étudiant</th>
+                <th>Période</th>
             </tr>
         </thead>
         <tbody>
             {# show the information for every session #}
-            {% for session in sessions %}
+            {% for absence in absences %}
                 <tr>
-                    <td><a href="{% url "Palto:teaching_session_view" session.id %}">{{ session.short_id }}</a></td>
-                    <td><a href="{% url "Palto:teaching_unit_view" session.unit.id %}">{{ session.unit.name }}</a></td>
-                    <td>{{ session.start }}<br>{{ session.end }}</td>
-                    <td><a href="{% url "Palto:profile" session.teacher.id %}">{{ session.teacher }}</a></td>
-                    <td>{{ session.attendances.all|length }} / {{ session.group.students.all|length }}</td>
+                    <td><a href="{% url "Palto:absence_view" absence.id %}">{{ absence.short_id }}</a></td>
+                    <td><a href="{% url "Palto:department_view" absence.department.id %}">{{ absence.department }}</a></td>
+                    <td><a href="{% url "Palto:profile" absence.student.id %}">{{ absence.student }}</a></td>
+                    <td>{{ absence.start }}<br>{{ absence.end }}</td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
 
     {# page navigator #}
+    {# TODO(Faraphel): page navigator as template ? #}
+    {# TODO(Faraphel): new absence button #}
+
     <div>
         {% if sessions.has_previous %}
             <a href="?page={{ sessions.previous_page_number }}">Previous</a>

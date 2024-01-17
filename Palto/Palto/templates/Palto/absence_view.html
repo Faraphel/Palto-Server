@@ -1,6 +1,16 @@
-{% extends "Palto/base.html" %}
+{% extends "Palto/base/base-features.html" %}
+
+{% block page-title %}
+    Absence
+{% endblock %}
+
+{% block navigation-title %}
+    Absence
+{% endblock %}
 
 {% block body %}
+    {{ block.super }}
+
     {# absence's information #}
     <table>
         <tr>
@@ -9,7 +19,7 @@
         </tr>
         <tr>
             <th>Département</th>
-            <td><a href="{# TODO(Faraphel): departement #}">{{ absence.department }}</a></td>
+            <td><a href="{% url "Palto:department_view" absence.department.id %}">{{ absence.department }}</a></td>
         </tr>
         <tr>
             <th>Étudiant</th>

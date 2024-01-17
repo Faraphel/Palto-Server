@@ -1,0 +1,57 @@
+{% extends "Palto/base/base-features.html" %}
+{% load static %}
+
+{% block page-title %}
+    Groupe Étudiant {{ group.name }}
+{% endblock %}
+
+{% block navigation-title %}
+    Groupe Étudiant {{ group.name }}
+{% endblock %}
+
+{% block style %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static "Palto/css/table_view.css" %}" />
+{% endblock %}
+
+{% block body %}
+    {{ block.super }}
+
+    {# group's information #}
+    <table id="table-informations">
+        <tr>
+            <th>Identifiant</th>
+            <td>{{ group.id }}</td>
+        </tr>
+        <tr>
+            <th>Nom</th>
+            <td>{{ group.name }}</td>
+        </tr>
+        <tr>
+            <th>Département</th>
+            <td><a href="{% url "Palto:department_view" group.department.id %}">{{ group.department }}</a></td>
+        </tr>
+        <tr>
+            <th>Propriétaire</th>
+            <td><a href="{% url "Palto:profile" group.owner.id %}">{{ group.owner }}</a></td>
+        </tr>
+    </table>
+
+    <div id="table-relations">
+        {# group's students information #}
+        <table class="table-relation">
+            <thead>
+                <tr>
+                    <th>Étudiants</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in group.students.all %}
+                    <tr>
+                        <td><a href="{% url "Palto:profile" student.id %}">{{ student }}</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

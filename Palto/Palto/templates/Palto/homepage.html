@@ -1,5 +1,25 @@
-{% extends "Palto/base.html" %}
+{% extends "Palto/base/base-features.html" %}
+{% load static %}
+
+{% block page-title %}
+    Accueil
+{% endblock %}
+
+{% block navigation-title %}
+    Accueil
+{% endblock %}
+
+{% block style %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static "Palto/css/homepage.css" %}" />
+{% endblock %}
 
 {% block body %}
-    Hello there.
+    {{ block.super }}
+
+    <h1 class="title">Palto</h1>
+
+    <p class="text">
+        Palto est un outil de gestion des présences d'élèves dans vos établissements scolaires.
+    </p>
 {% endblock %}

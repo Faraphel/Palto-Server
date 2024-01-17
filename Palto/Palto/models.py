@@ -40,15 +40,29 @@ class ModelPermissionHelper:
     @abstractmethod
     def all_editable_by_user(cls, user: "User") -> QuerySet:
         """
+        Return the list of object that the user can edit
+        """
+
+    def is_editable_by_user(self, user: "User") -> bool:
+        """
         Return True if the user can edit this object
         """
+
+        return self in self.all_editable_by_user(user)
 
     @classmethod
     @abstractmethod
     def all_visible_by_user(cls, user: "User") -> QuerySet:
         """
+        Return the list of object that the user can see
+        """
+
+    def is_visible_by_user(self, user: "User") -> bool:
+        """
         Return True if the user can see this object
         """
+
+        return self in self.all_visible_by_user(user)
 
 
 class User(AbstractUser, ModelPermissionHelper):
@@ -521,6 +535,17 @@ class TeachingSession(models.Model, ModelPermissionHelper):
     @property
     def end(self) -> datetime:
         return self.start + self.duration
+
+    @property
+    def related_absences(self) -> QuerySet["Absence"]:
+        """
+        Return the sessions that match the user absence
+        """
+
+        return Absence.objects.filter(
+            student__in=self.group.students.all(),
+            start__lte=self.start, end__gte=self.end
+        ).distinct()
 
     # validations
 

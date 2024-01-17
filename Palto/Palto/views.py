@@ -8,7 +8,6 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required
 from django.core.handlers.wsgi import WSGIRequest
 from django.core.paginator import Paginator
-from django.db import IntegrityError
 from django.http import HttpResponseForbidden
 from django.shortcuts import render, get_object_or_404, redirect
 
@@ -25,24 +24,28 @@ def homepage_view(request: WSGIRequest):
 
 def login_view(request: WSGIRequest):
     # create a login form
-    form_login = forms.LoginForm(request.POST)
 
-    if form_login.is_valid():
-        # try to authenticate this user with the credentials
-        user = authenticate(
-            username=form_login.cleaned_data["username"],
-            password=form_login.cleaned_data["password"]
-        )
+    if request.POST:
+        form_login = forms.LoginForm(request.POST)
 
-        if user is not None:
-            # if the user was authenticated, log the user in.
-            login(request, user)
-            # redirect him to the main page
-            return redirect("Palto:homepage")
+        if form_login.is_valid():
+            # try to authenticate this user with the credentials
+            user = authenticate(
+                username=form_login.cleaned_data["username"],
+                password=form_login.cleaned_data["password"]
+            )
 
-        else:
-            # otherwise the credentials were invalid.
-            form_login.add_error(field=None, error="Invalid credentials.")
+            if user is not None:
+                # if the user was authenticated, log the user in.
+                login(request, user)
+                # redirect him to the main page
+                return redirect("Palto:homepage")
+
+            else:
+                # otherwise the credentials were invalid.
+                form_login.add_error(field=None, error="Invalid credentials.")
+    else:
+        form_login = forms.LoginForm()
 
     # return the page
     return render(
@@ -72,7 +75,7 @@ def profile_view(request: WSGIRequest, profile_id: uuid.UUID = None):
     profile = get_object_or_404(models.User, id=profile_id)
 
     # check if the user is allowed to see this specific object
-    if profile not in models.User.all_visible_by_user(request.user):
+    if not profile.is_visible_by_user(request.user):
         return HttpResponseForbidden()
 
     # prepare the data and the "complex" query for the template
@@ -124,8 +127,7 @@ def teaching_unit_view(request: WSGIRequest, unit_id: uuid.UUID):
     unit = get_object_or_404(models.TeachingUnit, id=unit_id)
 
     # check if the user is allowed to see this specific object
-    if unit not in models.TeachingUnit.all_visible_by_user(request.user):
-        # TODO(Faraphel): syntaxic sugar session.visible_by_user(request.user)
+    if not unit.is_visible_by_user(request.user):
         return HttpResponseForbidden()
 
     # render the page
@@ -143,23 +145,14 @@ def teaching_session_view(request: WSGIRequest, session_id: uuid.UUID):
     session = get_object_or_404(models.TeachingSession, id=session_id)
 
     # check if the user is allowed to see this specific object
-    if session not in models.TeachingSession.all_visible_by_user(request.user):
-        # TODO(Faraphel): syntaxic sugar session.visible_by_user(request.user)
+    if not session.is_visible_by_user(request.user):
         return HttpResponseForbidden()
 
     # prepare the data and the "complex" query for the template
     session_students_data = {
         student: {
-            "attendance": get_object_or_none(
-                models.Attendance.objects,
-                session=session,
-                student=student
-            ),
-            "absence": get_object_or_none(
-                models.Absence.objects,
-                student=student,
-                start__lte=session.start, end__gte=session.end
-            ),  # TODO(Faraphel): property ?
+            "attendance": get_object_or_none(models.Attendance.objects, session=session, student=student),
+            "absence": get_object_or_none(session.related_absences, student=student)
         }
 
         for student in session.group.students.all()
@@ -181,8 +174,7 @@ def absence_view(request: WSGIRequest, absence_id: uuid.UUID):
     absence = get_object_or_404(models.Absence, id=absence_id)
 
     # check if the user is allowed to see this specific object
-    if absence not in models.Absence.all_visible_by_user(request.user):
-        # TODO(Faraphel): syntaxic sugar session.visible_by_user(request.user)
+    if not absence.is_visible_by_user(request.user):
         return HttpResponseForbidden()
 
     # render the page
@@ -226,7 +218,7 @@ def new_absence_view(request: WSGIRequest):
                     content=file
                 )
 
-            return redirect("Palto:homepage")  # TODO(Faraphel): redirect to absence list
+            return redirect("Palto:absence_list")
 
     # render the page
     return render(
@@ -234,5 +226,61 @@ def new_absence_view(request: WSGIRequest):
         "Palto/absence_new.html",
         context=dict(
             form_new_absence=form_new_absence,
+        )
+    )
+
+
+def absence_list_view(request):
+    # get all the absences that the user can see, sorted by starting date
+    raw_absences = models.Absence.all_visible_by_user(request.user).order_by("start")
+    # paginate them to avoid having too many elements at the same time
+    paginator = Paginator(raw_absences, ELEMENT_PER_PAGE)
+
+    # get only the session for the requested page
+    page = request.GET.get("page", 0)
+    absences = paginator.get_page(page)
+
+    # render the page
+    return render(
+        request,
+        "Palto/absence_list.html",
+        context=dict(
+            absences=absences
+        )
+    )
+
+
+@login_required
+def department_view(request: WSGIRequest, department_id: uuid.UUID):
+    department = get_object_or_404(models.Department, id=department_id)
+
+    # check if the user is allowed to see this specific object
+    if not department.is_visible_by_user(request.user):
+        return HttpResponseForbidden()
+
+    # render the page
+    return render(
+        request,
+        "Palto/department_view.html",
+        context=dict(
+            department=department,
+        )
+    )
+
+
+@login_required
+def student_group_view(request: WSGIRequest, group_id: uuid.UUID):
+    group = get_object_or_404(models.StudentGroup, id=group_id)
+
+    # check if the user is allowed to see this specific object
+    if not group.is_visible_by_user(request.user):
+        return HttpResponseForbidden()
+
+    # render the page
+    return render(
+        request,
+        "Palto/student_group.html",
+        context=dict(
+            group=group,
         )
     )

@@ -1,9 +1,25 @@
-{% extends "Palto/base.html" %}
+{% extends "Palto/base/base-features.html" %}
 {% load dict_tags %}
+{% load static %}
+
+{% block page-title %}
+    Session de {{ session.unit.name }}
+{% endblock %}
+
+{% block navigation-title %}
+    Session de {{ session.unit.name }}
+{% endblock %}
+
+{% block style %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static "Palto/css/table_view.css" %}" />
+{% endblock %}
 
 {% block body %}
+    {{ block.super }}
+
     {# session's information #}
-    <table>
+    <table id="table-informations">
         <tr>
             <th>Identifiant</th>
             <td>{{ session.id }}</td>
@@ -26,41 +42,43 @@
         </tr>
         <tr>
             <th>Groupe</th>
-            <td>{{ session.group }}</td>
+            <td><a href="{% url "Palto:student_group_view" session.group.id %}">{{ session.group }}</a></td>
         </tr>
     </table>
-
-    {# session's students information #}
-    <table>
-        <thead>
-            <tr>
-                <th>Elève</th>
-                <th>Présence</th>
-                <th>Absence</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for student, session_student_data in session_students_data.items %}
+    
+    <div id="table-relations">
+        {# session's students information #}
+        <table class="table-relation">
+            <thead>
                 <tr>
-                    <td><a href="{% url "Palto:profile" student.id %}">{{ student }}</a></td>
-                    <td>
-                        {% with attendance=session_student_data|dict_get:"attendance" %}
-                            {% if attendance != None %}
-                                {{ attendance.date }}
-                            {% endif %}
-                        {% endwith %}
-                    </td>
-                    <td>
-                        {% with absence=session_student_data|dict_get:"absence" %}
-                            {% if absence != None %}
-                                <a href="{% url "Palto:absence_view" absence.id %}">Détails</a>
-                            {% endif %}
-                        {% endwith %}
-                    </td>
+                    <th>Elève</th>
+                    <th>Présence</th>
+                    <th>Absence</th>
                 </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
+            </thead>
+            <tbody>
+                {% for student, session_student_data in session_students_data.items %}
+                    <tr>
+                        <td><a href="{% url "Palto:profile" student.id %}">{{ student }}</a></td>
+                        <td>
+                            {% with attendance=session_student_data|dict_get:"attendance" %}
+                                {% if attendance != None %}
+                                    {{ attendance.date }}
+                                {% endif %}
+                            {% endwith %}
+                        </td>
+                        <td>
+                            {% with absence=session_student_data|dict_get:"absence" %}
+                                {% if absence != None %}
+                                    <a href="{% url "Palto:absence_view" absence.id %}">Détails</a>
+                                {% endif %}
+                            {% endwith %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
     {# TODO(Raphaël): export boutton #}
 {% endblock %}

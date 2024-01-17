@@ -1,0 +1,32 @@
+#user-informations {
+    text-align: center;
+    margin: 5% auto;
+}
+
+#user-name {
+    font-size: 200%;
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+#user-relations {
+    border-collapse: collapse;
+    margin: auto;
+    text-align: center;
+}
+
+#user-relations > tbody > tr > td, #user-relations > tbody > tr > th {
+    border: 1px solid black;
+    padding: 4px;
+}
+
+.user-relation {
+    border-style: hidden;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.user-relation > tbody > tr > td, .user-relation > tbody > tr > th {
+    border: 1px solid black;
+    padding: 4px;
+}

@@ -3,11 +3,11 @@
 {% load static %}
 
 {% block page-title %}
-    Unité d'Enseignement de {{ unit.name }}
+    Départment {{ department.name }}
 {% endblock %}
 
 {% block navigation-title %}
-    Unité d'Enseignement de {{ unit.name }}
+    Départment {{ department.name }}
 {% endblock %}
 
 {% block style %}
@@ -18,32 +18,32 @@
 {% block body %}
     {{ block.super }}
 
-    {# unit's information #}
+    {# department's information #}
     <table id="table-informations">
         <tr>
             <th>Identifiant</th>
-            <td>{{ unit.id }}</td>
+            <td>{{ department.id }}</td>
         </tr>
         <tr>
             <th>Nom</th>
-            <td>{{ unit.name }}</td>
-        </tr>
-        <tr>
-            <th>Département</th>
-            <td><a href="{% url "Palto:department_view" unit.department.id %}">{{ unit.department.name }}</a></td>
+            <td>{{ department.name }}</td>
         </tr>
         <tr>
             <th>Mail</th>
-            <td>{% if unit.email != None %}{{ unit.email }}{% else %} / {% endif %}</td>
+            <td><a href="mailto:{{ department.email }}">{{ department.email }}</a></td>
         </tr>
         <tr>
-            <th>Sessions</th>
-            <td>{{ unit.sessions.all|length }}</td>
+            <th>Enseignants</th>
+            <td>{{ department.teachers.count }}</td>
+        </tr>
+        <tr>
+            <th>Étudiants</th>
+            <td>{{ department.students.count }}</td>
         </tr>
     </table>
 
     <div id="table-relations">
-        {# unit's managers #}
+        {# department's managers #}
         <table class="table-relation">
             <thead>
                 <tr>
@@ -51,15 +51,15 @@
                 </tr>
             </thead>
             <tbody>
-                {% for manager in unit.managers.all %}
+                {% for manager in department.managers.all %}
                     <tr>
                         <td><a href="{% url "Palto:profile" manager.id %}">{{ manager }}</a></td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
-    
-        {# unit's teachers #}
+
+        {# department's teachers #}
         <table class="table-relation">
             <thead>
                 <tr>
@@ -67,7 +67,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for teacher in unit.teachers.all %}
+                {% for teacher in department.teachers.all %}
                     <tr>
                         <td><a href="{% url "Palto:profile" teacher.id %}">{{ teacher }}</a></td>
                     </tr>
