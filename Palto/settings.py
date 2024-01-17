@@ -90,7 +90,7 @@ WSGI_APPLICATION = 'Palto.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
+_DATABASES = {
     "sqlite": {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / os.getenv("DATABASE_SQLITE_FILENAME", "db.sqlite3"),
@@ -113,7 +113,7 @@ DATABASES = {
     },
 }
 
-DATABASES["default"] = DATABASES[os.getenv("DATABASE_ENGINE", "sqlite")]
+DATABASES = {"default": _DATABASES[os.getenv("DATABASE_ENGINE", "sqlite")]}
 
 
 # Password validation
