@@ -32,7 +32,7 @@ if not SECRET_KEY:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "false").lower() in ["1", "true"]
 
-ALLOWED_HOSTS = os.getenv("", "localhost 0.0.0.0").split(" ")
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost 0.0.0.0").split(" ")
 INTERNAL_IPS = ["localhost"]
 
 # Application definition
